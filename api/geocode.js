@@ -16,15 +16,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: '서버에 네이버 지도 API 키가 설정되지 않았습니다.' });
   }
 
-  if (req.query.debug === '1') {
-    return res.status(200).json({
-      clientIdLen: clientId.length,
-      clientSecretLen: clientSecret.length,
-      clientIdPreview: clientId.slice(0, 4) + '...',
-    });
-  }
-
-
   const query = (req.query.query || '').toString().slice(0, 100);
   if (!query) {
     return res.status(400).json({ error: 'query 파라미터(주소)가 필요합니다.' });
