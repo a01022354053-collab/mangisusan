@@ -24,27 +24,14 @@ export default async function handler(req, res) {
     });
   }
 
+
   const query = (req.query.query || '').toString().slice(0, 100);
   if (!query) {
     return res.status(400).json({ error: 'query 파라미터(주소)가 필요합니다.' });
   }
 
-  const apiUrl = `https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(query)}`;
-
   try {
-    const naverRes = await fetch(apiUrl, {
-      headers: {
-        'X-NCP-APIGW-API-KEY-ID': clientId,
-        'X-NCP-APIGW-API-KEY': clientSecret,
-      },
-    });
-
-    if (!naverRes.ok) {
-      const text = await naverRes.text();
-      return res.status(naverRes.status).json({ error: 'Geocoding API 호출 실패', detail: text });
-    }
-
-    const data = await naverRes.json();
+    const data = await requestGeocode(query, clientId, clientSecret);
     const addresses = data.addresses || [];
 
     if (addresses.length === 0) {
@@ -63,6 +50,42 @@ export default async function handler(req, res) {
       jibunAddress: first.jibunAddress,
     });
   } catch (err) {
-    return res.status(500).json({ error: '지오코딩 중 오류가 발생했습니다.', detail: String(err) });
+    return res.status(err.statusCode || 500).json({ error: '지오코딩 중 오류가 발생했습니다.', detail: err.message || String(err) });
   }
+}
+
+function requestGeocode(query, clientId, clientSecret) {
+  const https = require('https');
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'maps.apigw.ntruss.com',
+      path: '/map-geocode/v2/geocode?query=' + encodeURIComponent(query),
+      method: 'GET',
+      headers: {
+        'x-ncp-apigw-api-key-id': clientId,
+        'x-ncp-apigw-api-key': clientSecret,
+        Accept: 'application/json',
+      },
+    };
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => { body += chunk; });
+      res.on('end', () => {
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          const err = new Error(body);
+          err.statusCode = res.statusCode;
+          return reject(err);
+        }
+        try {
+          resolve(JSON.parse(body));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.end();
+  });
 }
