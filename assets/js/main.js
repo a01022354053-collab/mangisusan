@@ -601,6 +601,40 @@
   }
 
   /* ======================================================================
+   * 오시는 길 지도 (네이버 Dynamic Map)
+   * - 매장 주소는 화면의 주소 블록(.location__value)에서 읽음 (index.html 에 직접 적혀 있음)
+   * - 좌표는 서버리스 함수(/api/geocode)로 변환 (네이버 API 키는 서버에만 존재)
+   * ==================================================================== */
+  function initMap() {
+    var slot = document.querySelector('[data-map-slot]');
+    if (!slot || typeof naver === 'undefined' || !naver.maps) return;
+
+    var addressEl = document.querySelector('.location__value');
+    var address = (addressEl && addressEl.textContent.trim()) || '경상북도 칠곡군 북삼읍 북삼로 58';
+
+    var mapEl = h('div', { className: 'store-map', id: 'storeMap' });
+    setContent(slot, mapEl);
+
+    fetch('/api/geocode?query=' + encodeURIComponent(address))
+      .then(function (res) {
+        if (!res.ok) throw new Error('지오코딩 실패');
+        return res.json();
+      })
+      .then(function (data) {
+        var center = new naver.maps.LatLng(data.lat, data.lng);
+        var map = new naver.maps.Map(mapEl, { center: center, zoom: 17 });
+        new naver.maps.Marker({ position: center, map: map, title: '만기수산셀프매장' });
+      })
+      .catch(function () {
+        setContent(slot, h('div', { className: 'empty-state' }, [
+          icon('pin', 'empty-state__icon'),
+          h('p', { className: 'empty-state__title', text: '지도를 불러오지 못했습니다' }),
+          h('p', { className: 'empty-state__desc', text: '위의 네이버 지도·카카오맵 버튼으로 길찾기를 이용해 주세요.' })
+        ]));
+      });
+  }
+
+  /* ======================================================================
    * 네이버 블로그 후기
    * ==================================================================== */
   function renderReviews() {
@@ -689,6 +723,7 @@
     safely('이용 방법', renderGuide);
     safely('사진', renderGallery);
     safely('후기', renderReviews);
+    safely('지도', initMap);
     safely('구조화 데이터', injectStructuredData);
     safely('연도', function () {
       var year = document.querySelector('[data-current-year]');
