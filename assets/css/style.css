@@ -1401,6 +1401,83 @@ html.has-dialog { overflow: hidden; }
 .lightbox__nav--prev { left: max(8px, env(safe-area-inset-left, 0px)); }
 .lightbox__nav--next { right: max(8px, env(safe-area-inset-right, 0px)); }
 
+/* ==========================================================================
+   움직임 — 스크롤 등장, 흐르는 물결선, 지도 표시, 불티
+   (모두 '동작 줄이기' 설정에서는 꺼짐)
+   ========================================================================== */
+.js-reveal [data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .7s ease var(--reveal-delay, 0ms), transform .85s cubic-bezier(.2, .7, .2, 1) var(--reveal-delay, 0ms);
+}
+.js-reveal [data-reveal].is-revealed { opacity: 1; transform: none; }
+
+/* 섹션 제목: 먹이 번지듯 또렷해지고, 붉은 붓 밑줄이 왼쪽부터 그어짐 */
+.js-reveal .section__head[data-reveal] .section__title { opacity: .15; filter: blur(8px); transition: opacity 1s ease .1s, filter 1s ease .1s; }
+.js-reveal .section__head[data-reveal].is-revealed .section__title { opacity: 1; filter: none; }
+.js-reveal .section__head[data-reveal] .section__title::after { transform: scaleX(0); transform-origin: left center; transition: transform .9s cubic-bezier(.2, .7, .2, 1) .5s; }
+.js-reveal .section__head[data-reveal].is-revealed .section__title::after { transform: scaleX(1); }
+
+/* 룸·단체석 인원 막대가 차오름 */
+.js-reveal .card--amenities[data-reveal] .capacity__bar { transform: scaleX(0); transform-origin: left center; transition: transform 1.2s cubic-bezier(.2, .7, .2, 1) .5s; }
+.js-reveal .card--amenities[data-reveal].is-revealed .capacity__bar { transform: scaleX(1); }
+
+/* 불티 */
+.section--menu .container { position: relative; z-index: 1; }
+.embers { position: absolute; left: 0; right: 0; bottom: 0; height: 75%; overflow: hidden; pointer-events: none; }
+.ember {
+  position: absolute;
+  bottom: -12px;
+  left: var(--x);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: #FFC27A;
+  box-shadow: 0 0 6px 2px rgba(255, 138, 60, .65);
+  opacity: 0;
+  animation: ember-rise var(--dur) linear var(--delay) infinite;
+}
+@keyframes ember-rise {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  10% { opacity: .95; }
+  60% { opacity: .55; }
+  100% { transform: translate(var(--drift), -460px) scale(.4); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* 섹션 사이 물결선이 천천히 흐름 */
+  .section::before { animation: wave-flow 18s linear infinite; }
+  /* 오늘 영업 카드가 로고 뒤를 이어 떠오름 */
+  .today__card { animation: rise .8s cubic-bezier(.2, .7, .2, 1) .35s both; }
+  /* 상단 문구 양옆 붉은 선이 그어짐 */
+  .hero__eyebrow::before { animation: line-in .7s ease 1.7s both; transform-origin: right center; }
+  .hero__eyebrow::after { animation: line-in .7s ease 1.7s both; transform-origin: left center; }
+  /* 지도 표시가 떨어지듯 꽂히고, 매장 표시는 은은하게 맥박 */
+  .map-pin { animation: pin-drop .7s cubic-bezier(.3, 1.4, .5, 1) both; }
+  .map-pin--parking { animation-delay: .25s; }
+  .map-pin--store .map-pin__dot { animation: pin-pulse 2.4s ease-out 1s infinite; }
+  /* 리뷰 버튼의 물결 무늬가 천천히 흔들림 */
+  .review-cta::after { animation: drift 7s ease-in-out infinite alternate; }
+  .review-cta__arrow { animation: nudge-x 2.4s ease-in-out infinite; }
+  /* 이용 방법 아이콘: 올리면 살짝 흔들림 */
+  .guide-topic:hover .guide-topic__icon { animation: wiggle .5s ease; }
+  .site-nav__list a { transition: background-color .2s ease, color .2s ease; }
+}
+@keyframes wave-flow { from { background-position: 0 center; } to { background-position: 240px center; } }
+@keyframes line-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes pin-drop {
+  from { opacity: 0; transform: translate(-50%, -170%); }
+  to { opacity: 1; transform: translate(-50%, -100%); }
+}
+@keyframes pin-pulse {
+  0% { box-shadow: 0 1px 4px rgba(0, 0, 0, .35), 0 0 0 0 rgba(168, 20, 27, .5); }
+  70% { box-shadow: 0 1px 4px rgba(0, 0, 0, .35), 0 0 0 12px rgba(168, 20, 27, 0); }
+  100% { box-shadow: 0 1px 4px rgba(0, 0, 0, .35), 0 0 0 0 rgba(168, 20, 27, 0); }
+}
+@keyframes drift { from { transform: translateX(0); } to { transform: translateX(-48px); } }
+@keyframes nudge-x { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+@keyframes wiggle { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-10deg); } 65% { transform: rotate(8deg); } }
+
 /* ---------- 동작 줄이기 설정 존중 ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

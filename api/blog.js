@@ -1,27 +1,28 @@
 // 네이버 블로그 검색 API 서버 프록시
 // ---------------------------------------------------------------------------
 // - 키는 Vercel 환경 변수에서만 읽고, 방문자 브라우저로는 절대 보내지 않습니다.
-// - '만기수산'으로 검색한 글 중, 제목·요약에 지역명(북삼·칠곡·인평) 또는 '셀프매장'이
-//   함께 있는 글만 돌려줍니다. (다른 지역의 동명 업체 글을 거르기 위함)
+// - '만기수산 북삼', '만기수산 칠곡', '만기수산셀프매장'으로 검색합니다.
+//   검색어에 지역명이 들어가므로 네이버가 본문 전체에서 지역까지 맞는 글을 찾아 주고,
+//   여기서는 제목·요약에 '만기수산'이 실제로 있는 글만 남깁니다. (다른 지역 동명 업체 방지)
 // - 검색 API가 주지 않는 썸네일 이미지는 만들거나 가져오지 않습니다.
 //
-// 사용하는 환경 변수 (아래 중 먼저 찾은 한 쌍을 사용)
-//   네이버 개발자센터 검색 API : NAVER_SEARCH_CLIENT_ID / NAVER_SEARCH_CLIENT_SECRET
-//                               NAVER_BLOG_CLIENT_ID / NAVER_BLOG_CLIENT_SECRET
-//                               NAVER_CLIENT_ID / NAVER_CLIENT_SECRET
-//   네이버 클라우드 API HUB     : NAVER_API_HUB_KEY_ID / NAVER_API_HUB_KEY
-//                               (없으면 지도용 NAVER_MAPS_CLIENT_ID / NAVER_MAPS_CLIENT_SECRET 로 시도)
+// 키 찾는 순서
+//   1) 네이버 개발자센터 검색 API : NAVER_CLIENT_ID / NAVER_CLIENT_SECRET
+//                                  NAVER_SEARCH_CLIENT_ID / _SECRET, NAVER_BLOG_CLIENT_ID / _SECRET
+//   2) 이름에 NAVER 가 들어간 ...ID / ...SECRET 짝 (이름이 달라도 자동으로 찾음)
+//   3) 네이버 클라우드 API HUB   : NAVER_API_HUB_KEY_ID / NAVER_API_HUB_KEY (지도 키로도 시도)
+//
+// 문제 확인: /api/blog?check=1 → 찾은 키 '이름', 네이버 응답 코드·오류 메시지, 검색 건수 (키 값은 절대 표시 안 함)
 const https = require('https');
 
-const QUERY = '만기수산';
+const QUERIES = ['만기수산 북삼', '만기수산 칠곡', '만기수산셀프매장'];
 const MUST_INCLUDE = '만기수산';
-const AREA_WORDS = ['북삼', '칠곡', '인평', '셀프매장'];
 const MAX_ITEMS = 12;
 
-const CREDENTIALS = [
+const KNOWN = [
+  { type: 'openapi', id: 'NAVER_CLIENT_ID', secret: 'NAVER_CLIENT_SECRET' },
   { type: 'openapi', id: 'NAVER_SEARCH_CLIENT_ID', secret: 'NAVER_SEARCH_CLIENT_SECRET' },
   { type: 'openapi', id: 'NAVER_BLOG_CLIENT_ID', secret: 'NAVER_BLOG_CLIENT_SECRET' },
-  { type: 'openapi', id: 'NAVER_CLIENT_ID', secret: 'NAVER_CLIENT_SECRET' },
   { type: 'apihub', id: 'NAVER_API_HUB_KEY_ID', secret: 'NAVER_API_HUB_KEY' },
   { type: 'apihub', id: 'NAVER_MAPS_CLIENT_ID', secret: 'NAVER_MAPS_CLIENT_SECRET' }
 ];
@@ -29,12 +30,12 @@ const CREDENTIALS = [
 const ENDPOINTS = {
   openapi: (q) => ({
     hostname: 'openapi.naver.com',
-    path: '/v1/search/blog.json?display=100&sort=date&query=' + encodeURIComponent(q),
+    path: '/v1/search/blog.json?display=50&sort=sim&query=' + encodeURIComponent(q),
     headers: (id, secret) => ({ 'X-Naver-Client-Id': id, 'X-Naver-Client-Secret': secret })
   }),
   apihub: (q) => ({
     hostname: 'naverapihub.apigw.ntruss.com',
-    path: '/search/v1/blog?display=100&sort=date&query=' + encodeURIComponent(q),
+    path: '/search/v1/blog?display=50&sort=sim&query=' + encodeURIComponent(q),
     headers: (id, secret) => ({ 'X-NCP-APIGW-API-KEY-ID': id, 'X-NCP-APIGW-API-KEY': secret })
   })
 };
@@ -60,13 +61,13 @@ function formatPostDate(value) {
 function isSafeLink(url) {
   try {
     const u = new URL(url);
-    return u.protocol === 'https:' || u.protocol === 'http:';
+    return u.protocol === 'https:';
   } catch (e) {
     return false;
   }
 }
 
-/** 만기수산셀프매장(칠곡 북삼) 관련 글만 남기고 최신순으로 정리 */
+/** 제목·요약에 '만기수산'이 있는 글만 남기고 중복 제거 후 최신순 */
 function filterPosts(items) {
   const seen = new Set();
   return (items || [])
@@ -80,12 +81,33 @@ function filterPosts(items) {
     .filter((post) => {
       if (!post.title || !isSafeLink(post.url) || seen.has(post.url)) return false;
       const text = (post.title + ' ' + post.summary).replace(/\s+/g, '');
-      const relevant = text.includes(MUST_INCLUDE) && AREA_WORDS.some((word) => text.includes(word));
+      const relevant = text.includes(MUST_INCLUDE);
       if (relevant) seen.add(post.url);
       return relevant;
     })
     .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
     .slice(0, MAX_ITEMS);
+}
+
+/** 사용할 수 있는 키 쌍 목록 (이름만 다를 때도 자동으로 찾음) */
+function findCredentials(env) {
+  const list = KNOWN.slice();
+  Object.keys(env).forEach((name) => {
+    if (!/NAVER/i.test(name) || /MAP/i.test(name)) return;
+    if (!/(CLIENT_?ID|_ID|KEY_?ID)$/i.test(name)) return;
+    const secretName = [
+      name.replace(/CLIENT_?ID$/i, 'CLIENT_SECRET'),
+      name.replace(/KEY_?ID$/i, 'KEY'),
+      name.replace(/_ID$/i, '_SECRET'),
+      name.replace(/ID$/i, 'SECRET')
+    ].find((candidate) => candidate !== name && env[candidate]);
+    if (!secretName || list.some((c) => c.id === name)) return;
+    list.splice(3, 0, { type: 'openapi', id: name, secret: secretName }); // 개발자센터 키로 먼저 시도
+    list.push({ type: 'apihub', id: name, secret: secretName });
+  });
+  return list
+    .map((c) => ({ ...c, idValue: String(env[c.id] || '').trim(), secretValue: String(env[c.secret] || '').trim() }))
+    .filter((c) => c.idValue && c.secretValue);
 }
 
 function defaultRequester(options) {
@@ -104,35 +126,55 @@ function defaultRequester(options) {
 
 let requester = defaultRequester;
 
-function configuredCredentials(env) {
-  return CREDENTIALS
-    .map((c) => ({ ...c, idValue: (env[c.id] || '').trim(), secretValue: (env[c.secret] || '').trim() }))
-    .filter((c) => c.idValue && c.secretValue);
+/** 네이버 오류 응답에서 원인 메시지만 꺼냄 (키 값은 들어 있지 않음) */
+function naverError(body) {
+  try {
+    const data = JSON.parse(body);
+    return [data.errorCode, data.errorMessage || data.error?.message].filter(Boolean).join(' ').slice(0, 200);
+  } catch (e) {
+    return String(body || '').slice(0, 120);
+  }
+}
+
+async function search(cred, query) {
+  const endpoint = ENDPOINTS[cred.type](query);
+  const res = await requester({
+    hostname: endpoint.hostname,
+    path: endpoint.path,
+    headers: { Accept: 'application/json', ...endpoint.headers(cred.idValue, cred.secretValue) }
+  });
+  if (res.status < 200 || res.status >= 300) {
+    const error = new Error(naverError(res.body));
+    error.status = res.status;
+    throw error;
+  }
+  return JSON.parse(res.body).items || [];
 }
 
 async function fetchPosts(env) {
-  const creds = configuredCredentials(env);
+  const creds = findCredentials(env);
   if (!creds.length) {
-    const error = new Error('블로그 검색 API 키가 설정되지 않았습니다.');
+    const error = new Error('블로그 검색 API 키를 찾지 못했습니다. Vercel 환경 변수 이름을 확인해 주세요.');
     error.statusCode = 503;
+    error.configured = Object.keys(env).filter((n) => /NAVER/i.test(n)); // 이름만
     throw error;
   }
+
   const attempts = [];
   for (const cred of creds) {
-    const endpoint = ENDPOINTS[cred.type](QUERY);
+    const label = `${cred.type}(${cred.id})`;
     try {
-      const res = await requester({
-        hostname: endpoint.hostname,
-        path: endpoint.path,
-        headers: { Accept: 'application/json', ...endpoint.headers(cred.idValue, cred.secretValue) }
-      });
-      if (res.status >= 200 && res.status < 300) {
-        const data = JSON.parse(res.body);
-        return { source: cred.type, items: filterPosts(data.items) };
+      const all = [];
+      const queries = [];
+      for (const query of QUERIES) {
+        const items = await search(cred, query); // 첫 검색에서 인증이 실패하면 다음 키로 넘어감
+        all.push(...items);
+        queries.push({ query, fetched: items.length });
       }
-      attempts.push({ source: `${cred.type}(${cred.id})`, status: res.status });
+      const items = filterPosts(all);
+      return { source: cred.type, keyName: cred.id, queries, matched: items.length, items };
     } catch (err) {
-      attempts.push({ source: `${cred.type}(${cred.id})`, status: 0, message: String(err.message || err).slice(0, 120) });
+      attempts.push({ key: label, status: err.status || 0, message: String(err.message || err).slice(0, 200) });
     }
   }
   const error = new Error('블로그 검색 API 호출에 실패했습니다.');
@@ -146,16 +188,19 @@ async function handler(req, res) {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
   }
+  const check = req.query && (req.query.check === '1' || req.query.check === 'true');
   try {
     const result = await fetchPosts(process.env);
     // 1시간 동안 같은 결과를 재사용 (API 호출 한도 보호), 이후 하루까지는 이전 결과를 보여 주며 갱신
-    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
-    return res.status(200).json({ ok: true, source: result.source, query: QUERY, items: result.items });
+    res.setHeader('Cache-Control', check ? 'no-store' : 's-maxage=3600, stale-while-revalidate=86400');
+    const body = { ok: true, items: result.items };
+    if (check) Object.assign(body, { keyName: result.keyName, source: result.source, queries: result.queries, matched: result.matched });
+    return res.status(200).json(body);
   } catch (err) {
-    res.setHeader('Cache-Control', 's-maxage=300');
+    res.setHeader('Cache-Control', check ? 'no-store' : 's-maxage=120');
     const body = { ok: false, error: err.message };
-    if (err.statusCode === 503) body.expectedEnv = CREDENTIALS.map((c) => `${c.id} / ${c.secret}`);
-    if (err.attempts) body.attempts = err.attempts; // 키 값은 포함하지 않음
+    if (err.configured) body.naverEnvNames = err.configured;
+    if (err.attempts) body.attempts = err.attempts; // 키 '이름'과 네이버 응답만, 값은 없음
     return res.status(err.statusCode || 500).json(body);
   }
 }
@@ -163,5 +208,6 @@ async function handler(req, res) {
 module.exports = handler;
 module.exports.cleanText = cleanText;
 module.exports.filterPosts = filterPosts;
+module.exports.findCredentials = findCredentials;
 module.exports.fetchPosts = fetchPosts;
 module.exports._setRequester = (fn) => { requester = fn || defaultRequester; };

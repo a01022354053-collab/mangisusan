@@ -12,6 +12,8 @@
  *   renderGallery       매장 사진 + 크게 보기 (site-data.js → gallery)
  *   initMap             네이버 지도 (site-data.js → map, 좌표는 /api/geocode)
  *   initReviews         리뷰 버튼 + 블로그 후기 (/api/blog)
+ *   initReveal          스크롤 등장 효과 (제목 먹 번짐·붓 밑줄, 카드 차례로 떠오르기)
+ *   initEmbers          메뉴판 아래 숯불 불티
  *   injectStructuredData 검색엔진용 매장 정보(JSON-LD)
  * ========================================================================== */
 (function () {
@@ -633,7 +635,7 @@
 
   function pinContent(place) {
     var parking = place.kind === 'parking';
-    return '<div class="map-pin' + (parking ? ' map-pin--parking' : '') + '">' +
+    return '<div class="map-pin ' + (parking ? 'map-pin--parking' : 'map-pin--store') + '">' +
       '<span class="map-pin__label">' + (parking ? '<span class="map-p">P</span>' : '') + escapeHtml(place.label || place.name) + '</span>' +
       '<span class="map-pin__stem"></span><span class="map-pin__dot"></span></div>';
   }
@@ -805,11 +807,92 @@
             return;
           }
           setContent(root, h('ul', { className: 'blog-grid' }, posts.map(blogCard)));
+          observeReveal(root);
         })
         .catch(function () {
           setContent(root, blogFallback('블로그 후기를 불러오지 못했습니다.'));
         });
     });
+  }
+
+  /* ======================================================================
+   * 스크롤 등장 효과
+   * - 화면에 들어올 때 섹션 제목은 먹처럼 번지며 붓 밑줄이 그어지고, 카드는 차례로 떠오릅니다.
+   * - 처음 화면에 이미 보이는 것은 바로 보여 주고(깜빡임 방지), 스크립트가 없으면 그냥 다 보입니다.
+   * ==================================================================== */
+  var REVEAL_SELECTOR = '.section__head, .card, .location__map, .location__info, .menu-board, .menu-cat, ' +
+    '.guide-topic, .guide-note, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head, .site-footer__inner';
+  var revealObserver = null;
+
+  function prepareReveal(nodes) {
+    // 위치를 먼저 모두 읽은 뒤 표시를 바꿔야 이미 보이는 요소가 깜빡이지 않음
+    var viewH = window.innerHeight || document.documentElement.clientHeight;
+    var inView = nodes.map(function (el) {
+      var r = el.getBoundingClientRect();
+      return r.top < viewH * 0.95 && r.bottom > 0;
+    });
+    nodes.forEach(function (el, i) {
+      var item = el.closest('li') || el;
+      var index = Array.prototype.indexOf.call(item.parentNode.children, item);
+      el.style.setProperty('--reveal-delay', Math.min(Math.max(index, 0), 6) * 80 + 'ms');
+      el.setAttribute('data-reveal', '');
+      if (inView[i]) el.classList.add('is-revealed');
+      else revealObserver.observe(el);
+    });
+  }
+
+  function observeReveal(scope) {
+    if (!revealObserver || !scope) return;
+    var nodes = Array.prototype.filter.call(scope.querySelectorAll(REVEAL_SELECTOR), function (el) {
+      return !el.hasAttribute('data-reveal');
+    });
+    if (nodes.length) prepareReveal(nodes);
+  }
+
+  function finishReveal(el) {
+    // 마우스를 올렸을 때의 움직임과 겹치지 않도록, 다 나타난 블로그 카드는 원래 상태로 되돌림
+    if (!el.classList.contains('blog-card')) return;
+    var done = function () {
+      el.removeAttribute('data-reveal');
+      el.classList.remove('is-revealed');
+    };
+    el.addEventListener('transitionend', function (event) { if (event.propertyName === 'transform') done(); }, { once: true });
+    setTimeout(done, 1800);
+  }
+
+  function initReveal() {
+    if (reducedMotion || !('IntersectionObserver' in window)) return;
+    revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-revealed');
+        revealObserver.unobserve(entry.target);
+        finishReveal(entry.target);
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
+    var nodes = Array.prototype.slice.call(document.querySelectorAll(REVEAL_SELECTOR));
+    document.documentElement.classList.add('js-reveal');
+    prepareReveal(nodes);
+  }
+
+  /* ======================================================================
+   * 메뉴판 아래 숯불 불티 (동작 줄이기 설정이면 만들지 않음)
+   * ==================================================================== */
+  function initEmbers() {
+    var section = document.querySelector('.section--menu');
+    if (!section || reducedMotion) return;
+    var box = h('div', { className: 'embers', 'aria-hidden': 'true' });
+    var count = window.innerWidth < 640 ? 10 : 18;
+    for (var i = 0; i < count; i++) {
+      var spark = h('span', { className: 'ember' });
+      spark.style.setProperty('--x', (4 + Math.random() * 92).toFixed(1) + '%');
+      spark.style.setProperty('--size', (2 + Math.random() * 3).toFixed(1) + 'px');
+      spark.style.setProperty('--dur', (6 + Math.random() * 6).toFixed(1) + 's');
+      spark.style.setProperty('--delay', (-Math.random() * 12).toFixed(1) + 's');
+      spark.style.setProperty('--drift', Math.round((Math.random() - 0.5) * 80) + 'px');
+      box.appendChild(spark);
+    }
+    section.appendChild(box);
   }
 
   /* ======================================================================
@@ -863,6 +946,8 @@
     safely('사진', renderGallery);
     safely('지도', initMap);
     safely('리뷰', initReviews);
+    safely('불티', initEmbers);
+    safely('등장 효과', initReveal);
     safely('구조화 데이터', injectStructuredData);
     safely('연도', function () {
       var year = document.querySelector('[data-current-year]');

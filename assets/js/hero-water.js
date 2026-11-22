@@ -4,6 +4,7 @@
  * - 먹으로 그린 듯한 장어 실루엣이 S자로 몸을 흔들며 천천히 지나가고,
  *   물결이 퍼지고, 작은 물방울이 떠오릅니다.
  * - 로고가 가려지지 않도록 옅은 농도로 그리고, 로고 바로 뒤는 더 옅게 지나갑니다.
+ * - 화면을 누르면 물결이 퍼지고 근처 장어가 놀라 빠르게 헤엄쳐 갑니다. (마우스를 움직여도 잔물결)
  * - 화면에서 벗어나거나 다른 탭을 보면 멈추고,
  *   '동작 줄이기'를 켠 기기에서는 움직이지 않는 한 장면만 그립니다.
  * ========================================================================== */
@@ -51,6 +52,8 @@
       frequency: rand(0.45, 0.6),
       phase: rand(0, Math.PI * 2),
       drift: rand(0, Math.PI * 2),
+      wave: 0,   // 꼬리 흔들림 누적 위상
+      boost: 0,  // 놀랐을 때 속도 증가분 (서서히 줄어듦)
       opacity: depth === 'far' ? 0.1 : depth === 'mid' ? 0.22 : 0.3,
       x: direction > 0 ? -length + (width + length) * startProgress : width + length - (width + length) * startProgress
     };
@@ -66,7 +69,7 @@
     var baseY = height * eel.lane + Math.sin(t * 0.18 + eel.drift) * height * 0.035;
     var x = eel.x - eel.dir * s * eel.length;
     var envelope = 0.3 + 0.7 * s; // 꼬리 쪽으로 갈수록 크게 흔들림
-    var y = baseY + Math.sin(s * eel.waveCount * Math.PI * 2 - t * eel.frequency * Math.PI * 2 + eel.phase) * eel.amplitude * envelope;
+    var y = baseY + Math.sin(s * eel.waveCount * Math.PI * 2 - eel.wave + eel.phase) * eel.amplitude * envelope;
     return { x: x, y: y };
   }
 
@@ -139,7 +142,9 @@
   }
 
   function updateEel(eel, dt) {
-    eel.x += eel.dir * eel.speed * dt;
+    eel.boost = Math.max(0, eel.boost - dt * 1.1);
+    eel.x += eel.dir * eel.speed * (1 + eel.boost) * dt;
+    eel.wave += dt * eel.frequency * Math.PI * 2 * (1 + eel.boost * 0.8);
     var gone = eel.dir > 0 ? eel.x - eel.length > width + 40 : eel.x + eel.length < -40;
     if (gone) {
       // 반대편에서 다시 등장 (높이·속도를 조금씩 바꿔 반복감을 줄임)
@@ -151,8 +156,9 @@
   }
 
   /* ---------- 물결 ---------- */
-  function spawnRipple(x, y) {
-    ripples.push({ x: x, y: y, age: 0, life: rand(3.2, 4.4), size: rand(60, 120) * (width < 640 ? 0.7 : 1) });
+  function spawnRipple(x, y, scale) {
+    if (ripples.length > 24) ripples.shift();
+    ripples.push({ x: x, y: y, age: 0, life: rand(3.2, 4.4), size: rand(60, 120) * (width < 640 ? 0.7 : 1) * (scale || 1) });
   }
 
   function drawRipple(r) {
@@ -307,6 +313,36 @@
       else stop();
     }).observe(hero);
   }
+
+  /* ---------- 손가락·마우스 반응 ---------- */
+  function localPoint(event) {
+    var rect = canvas.getBoundingClientRect();
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  }
+
+  hero.addEventListener('pointerdown', function (event) {
+    if (reduceQuery.matches) return;
+    var p = localPoint(event);
+    spawnRipple(p.x, p.y, 1.5);
+    var reach = Math.max(200, width * 0.3);
+    eels.forEach(function (eel) {
+      var head = spinePoint(eel, 0, time);
+      var mid = spinePoint(eel, 0.5, time);
+      var near = Math.min(Math.hypot(head.x - p.x, head.y - p.y), Math.hypot(mid.x - p.x, mid.y - p.y));
+      if (near < reach) eel.boost = 2.6; // 놀라서 빠르게
+    });
+    schedule();
+  }, { passive: true });
+
+  var lastMoveRipple = 0;
+  hero.addEventListener('pointermove', function (event) {
+    if (reduceQuery.matches || event.pointerType !== 'mouse') return;
+    var now = performance.now();
+    if (now - lastMoveRipple < 320) return;
+    lastMoveRipple = now;
+    var p = localPoint(event);
+    spawnRipple(p.x, p.y, 0.4);
+  }, { passive: true });
 
   if (reduceQuery.addEventListener) {
     reduceQuery.addEventListener('change', function () {

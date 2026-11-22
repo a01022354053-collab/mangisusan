@@ -15,25 +15,27 @@ const item = (over) => ({
   ...over
 });
 
+function fakeRes() {
+  const res = { headers: {}, statusCode: 0, payload: null };
+  res.setHeader = (k, v) => { res.headers[k] = v; };
+  res.status = (code) => { res.statusCode = code; return res; };
+  res.json = (body) => { res.payload = body; return res; };
+  return res;
+}
+
 test('강조 태그와 엔티티를 지운다', () => {
   assert.equal(blog.cleanText('<b>만기수산</b> &amp; &quot;장어&quot; &#39;굿&#39;'), '만기수산 & "장어" \'굿\'');
 });
 
-test('지역명이 없는 동명 업체 글은 제외', () => {
+test('제목·요약에 "만기수산"이 없으면 제외 (만기 적금·수산물 같은 엉뚱한 글)', () => {
   const posts = blog.filterPosts([
     item(),
-    item({ link: 'https://blog.naver.com/b/2', title: '부산 만기수산 횟집', description: '부산 해운대 횟집' }),
-    item({ link: 'https://blog.naver.com/c/3', title: '장어 먹방', description: '구미 장어집' })
+    item({ link: 'https://blog.naver.com/b/2', title: '적금 만기 기념 북삼 수산시장', description: '칠곡 북삼 수산물' }),
+    item({ link: 'https://blog.naver.com/c/3', title: '구미 장어 맛집', description: '북삼 만기 수산 셀프매장 후기' })
   ]);
-  assert.equal(posts.length, 1);
-  assert.equal(posts[0].url, 'https://blog.naver.com/a/1');
+  assert.deepEqual(posts.map((p) => p.url), ['https://blog.naver.com/a/1', 'https://blog.naver.com/c/3']);
   assert.equal(posts[0].date, '2026-11-01');
   assert.equal(posts[0].summary, '칠곡 북삼 장어 맛집 "만기수산"');
-});
-
-test('띄어쓰기가 달라도 인식 ("만기 수산", "셀프 매장")', () => {
-  const posts = blog.filterPosts([item({ title: '만기 수산 셀프 매장 후기', description: '장어' })]);
-  assert.equal(posts.length, 1);
 });
 
 test('중복·위험 링크 제거, 최신순 정렬', () => {
@@ -46,53 +48,82 @@ test('중복·위험 링크 제거, 최신순 정렬', () => {
   assert.deepEqual(posts.map((p) => p.url), ['https://blog.naver.com/x/2', 'https://blog.naver.com/x/1']);
 });
 
-test('키가 없으면 503 과 필요한 환경 변수 이름만 알려 줌', async () => {
-  await assert.rejects(blog.fetchPosts({}), (err) => err.statusCode === 503);
+test('키 이름이 달라도 NAVER ...ID / ...SECRET 짝을 찾아낸다', () => {
+  const names = (env) => blog.findCredentials(env).map((c) => `${c.type}:${c.id}>${c.secret}`);
+  assert.deepEqual(names({ NAVER_BLOG_ID: 'a', NAVER_BLOG_SECRET: 'b' }), ['openapi:NAVER_BLOG_ID>NAVER_BLOG_SECRET', 'apihub:NAVER_BLOG_ID>NAVER_BLOG_SECRET']);
+  assert.deepEqual(names({ NAVER_SEARCH_API_CLIENTID: 'a', NAVER_SEARCH_API_CLIENT_SECRET: 'b' }).slice(0, 1), ['openapi:NAVER_SEARCH_API_CLIENTID>NAVER_SEARCH_API_CLIENT_SECRET']);
+  // 표준 이름이 있으면 그것부터, 지도 키는 마지막(API HUB 로만)
+  const order = names({ NAVER_MAPS_CLIENT_ID: 'm', NAVER_MAPS_CLIENT_SECRET: 'n', NAVER_CLIENT_ID: 'a', NAVER_CLIENT_SECRET: 'b' });
+  assert.equal(order[0], 'openapi:NAVER_CLIENT_ID>NAVER_CLIENT_SECRET');
+  assert.equal(order[order.length - 1], 'apihub:NAVER_MAPS_CLIENT_ID>NAVER_MAPS_CLIENT_SECRET');
+  assert.equal(order.some((n) => n.startsWith('openapi:NAVER_MAPS')), false);
 });
 
-test('첫 번째 키가 실패하면 다음 키로 시도, 키 값은 응답에 남기지 않음', async () => {
+test('키가 없으면 503 과 NAVER 가 들어간 환경 변수 "이름"만 알려 줌', async () => {
+  await assert.rejects(blog.fetchPosts({ NAVER_MAPS_CLIENT_ID: '', OTHER: 'x' }), (err) => {
+    assert.equal(err.statusCode, 503);
+    assert.deepEqual(err.configured, ['NAVER_MAPS_CLIENT_ID']);
+    return true;
+  });
+});
+
+test('세 가지 검색어로 찾아 합치고, 첫 키가 실패하면 다음 키로', async () => {
   const calls = [];
   blog._setRequester(async (opts) => {
-    calls.push(opts.hostname);
-    if (opts.hostname === 'openapi.naver.com') return { status: 401, body: '{}' };
+    calls.push(opts.hostname + ' ' + decodeURIComponent(opts.path.split('query=')[1]));
+    if (opts.hostname === 'openapi.naver.com') {
+      return { status: 401, body: JSON.stringify({ errorCode: '024', errorMessage: 'Scope Status Invalid' }) };
+    }
+    if (opts.path.includes(encodeURIComponent('만기수산 칠곡'))) {
+      return { status: 200, body: JSON.stringify({ items: [item({ link: 'https://blog.naver.com/z/9', postdate: '20261120' })] }) };
+    }
     return { status: 200, body: JSON.stringify({ items: [item()] }) };
   });
   const result = await blog.fetchPosts({
     NAVER_CLIENT_ID: 'id1', NAVER_CLIENT_SECRET: 'secret1',
     NAVER_API_HUB_KEY_ID: 'id2', NAVER_API_HUB_KEY: 'secret2'
   });
-  assert.deepEqual(calls, ['openapi.naver.com', 'naverapihub.apigw.ntruss.com']);
-  assert.equal(result.source, 'apihub');
-  assert.equal(result.items.length, 1);
+  assert.deepEqual(calls, [
+    'openapi.naver.com 만기수산 북삼',
+    'naverapihub.apigw.ntruss.com 만기수산 북삼',
+    'naverapihub.apigw.ntruss.com 만기수산 칠곡',
+    'naverapihub.apigw.ntruss.com 만기수산셀프매장'
+  ]);
+  assert.equal(result.keyName, 'NAVER_API_HUB_KEY_ID');
+  assert.deepEqual(result.items.map((p) => p.url), ['https://blog.naver.com/z/9', 'https://blog.naver.com/a/1']);
   blog._setRequester(null);
 });
 
-test('모든 키가 실패하면 502 와 시도 기록(키 값 제외)', async () => {
-  blog._setRequester(async () => ({ status: 401, body: '{}' }));
+test('모든 키 실패 시 502, 네이버 오류 메시지는 보여 주되 키 값은 남기지 않음', async () => {
+  blog._setRequester(async () => ({ status: 401, body: JSON.stringify({ errorCode: '024', errorMessage: 'Authentication failed' }) }));
   await assert.rejects(blog.fetchPosts({ NAVER_CLIENT_ID: 'abc', NAVER_CLIENT_SECRET: 'def' }), (err) => {
     assert.equal(err.statusCode, 502);
+    assert.match(err.attempts[0].message, /024 Authentication failed/);
     assert.equal(JSON.stringify(err.attempts).includes('def'), false);
+    assert.equal(JSON.stringify(err.attempts).includes('abc'), false);
     return true;
   });
   blog._setRequester(null);
 });
 
-test('핸들러: 성공 시 캐시 헤더와 결과', async () => {
+test('핸들러: 평소에는 캐시, ?check=1 이면 진단 정보 + 캐시 안 함', async () => {
   blog._setRequester(async () => ({ status: 200, body: JSON.stringify({ items: [item()] }) }));
   process.env.NAVER_CLIENT_ID = 'x';
   process.env.NAVER_CLIENT_SECRET = 'y';
-  const headers = {};
-  let statusCode = 0;
-  let payload = null;
-  const res = {
-    setHeader: (k, v) => { headers[k] = v; },
-    status(code) { statusCode = code; return this; },
-    json(body) { payload = body; return this; }
-  };
-  await blog({ method: 'GET' }, res);
-  assert.equal(statusCode, 200);
-  assert.equal(payload.ok, true);
-  assert.match(headers['Cache-Control'], /s-maxage=3600/);
+
+  const normal = fakeRes();
+  await blog({ method: 'GET', query: {} }, normal);
+  assert.equal(normal.statusCode, 200);
+  assert.match(normal.headers['Cache-Control'], /s-maxage=3600/);
+  assert.equal(normal.payload.queries, undefined);
+
+  const check = fakeRes();
+  await blog({ method: 'GET', query: { check: '1' } }, check);
+  assert.equal(check.headers['Cache-Control'], 'no-store');
+  assert.equal(check.payload.keyName, 'NAVER_CLIENT_ID');
+  assert.equal(check.payload.queries.length, 3);
+  assert.equal(JSON.stringify(check.payload).includes('"y"'), false);
+
   delete process.env.NAVER_CLIENT_ID;
   delete process.env.NAVER_CLIENT_SECRET;
   blog._setRequester(null);
