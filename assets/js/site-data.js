@@ -107,11 +107,13 @@ window.SITE_DATA = {
    *    - 블로그 글은 서버(/api/blog)가 네이버 블로그 검색 API 로 가져와
    *      '만기수산' + 지역명(북삼·칠곡·인평)이 함께 있는 글만 골라 보여 줍니다.
    *    - hiddenPosts: 관련 없거나 숨기고 싶은 글의 주소를 넣으면 보이지 않습니다.
+   *    - hiddenKeywords: 제목이나 블로거 이름에 이 단어가 들어간 글은 보이지 않습니다. (띄어쓰기 무시)
    *        예) 'https://blog.naver.com/someone/223000000000'
    * ---------------------------------------------------------------------- */
   reviews: {
     reviewUrl: 'https://map.naver.com/p/search/%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0/place/1004464648?placePath=%2Freview%3FabtExp%3DN-NMB-COV-26-MED%3A3%26bk_query%3D%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0%26entry%3Dpll%26from%3Dmap%26fromNxList%3Dtrue%26fromPanelNum%3D2%26locale%3Dko%26searchText%3D%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0%26svcName%3Dmap_pcv5%26timestamp%3D202611221422%26type%3DphotoView&bk_query=%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0&entry=pll&from=nx&fromNxList=true&searchType=place&c=15.00,0,0,0,dh',
     blogCount: 9,
-    hiddenPosts: []
+    hiddenPosts: [],
+    hiddenKeywords: ['틀림없이 행복해질꾸야']
   }
 };

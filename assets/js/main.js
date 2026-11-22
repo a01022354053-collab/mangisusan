@@ -887,6 +887,13 @@
     if (!root) return;
     var count = reviews.blogCount || 9;
     var hidden = (reviews.hiddenPosts || []).map(function (u) { return String(u).replace(/^http:/, 'https:'); });
+    var squash = function (text) { return String(text || '').replace(/\s+/g, '').toLowerCase(); };
+    var hiddenWords = (reviews.hiddenKeywords || []).map(squash).filter(Boolean);
+    function isHidden(post) {
+      if (hidden.indexOf(post.url) !== -1) return true;
+      var text = squash(post.title) + '|' + squash(post.author);
+      return hiddenWords.some(function (word) { return text.indexOf(word) !== -1; });
+    }
     var hint = document.querySelector('.blog__hint');
 
     whenNear(root, function () {
@@ -898,7 +905,7 @@
         })
         .then(function (data) {
           var posts = (data.items || [])
-            .filter(function (post) { return post && post.title && /^https:\/\//.test(post.url) && hidden.indexOf(post.url) === -1; })
+            .filter(function (post) { return post && post.title && /^https:\/\//.test(post.url) && !isHidden(post); })
             .slice(0, count);
           if (!posts.length) {
             setContent(root, blogFallback('아직 소개할 블로그 후기가 없습니다.'));

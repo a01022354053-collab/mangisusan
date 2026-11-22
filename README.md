@@ -82,6 +82,7 @@ specialDays: [
 ### 리뷰·블로그 — `site-data.js` 의 `reviews`
 - `reviewUrl`: '리뷰' 버튼을 누르면 이동하는 주소
 - `hiddenPosts`: 관련 없는 블로그 글 주소를 넣으면 숨겨집니다.
+- `hiddenKeywords`: 제목이나 블로거 이름에 이 단어가 들어간 글은 숨겨집니다. 예) `['틀림없이 행복해질꾸야']`
 - `blogCount`: 보여 줄 블로그 후기 개수 (기본 9, 같은 블로거는 1개씩)
 
 ### 지도 — `site-data.js` 의 `map`
