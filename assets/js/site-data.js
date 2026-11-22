@@ -50,9 +50,6 @@ window.SITE_DATA = {
         label: '주류·음료',
         note: '아래 외 주류·음료 가격은 확인 중입니다.',
         items: [
-          { name: '일품진로25 + 토닉 2병 + 레몬', badge: '할인 세트', priceType: 'fixed', options: [{ label: null, amount: 27000, originalAmount: 30000 }] },
-          { name: '화요25 + 토닉 2병 + 레몬', badge: '할인 세트', priceType: 'fixed', options: [{ label: null, amount: 26000, originalAmount: 29000 }] },
-          { name: '복분자 + 토닉 2병 + 레몬', badge: '할인 세트', priceType: 'fixed', options: [{ label: null, amount: 17000, originalAmount: 19000 }] },
           { name: '벌떡주', description: '15가지 한약재를 달여 만든 술 · 375ml · 13%', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
           { name: '카스 제로 (무알코올 맥주)', priceType: 'fixed', options: [{ label: null, amount: 4000 }] }
         ]
