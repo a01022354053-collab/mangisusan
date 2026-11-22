@@ -605,15 +605,19 @@ a { color: inherit; }
   .info-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-      "store   hours"
+      "store   photos"
+      "hours   photos"
       "parking payment"
       "amenities amenities";
+    align-items: start;
   }
+  .card--photos { align-self: stretch; } /* 매장 카드·영업시간 옆에 사진을 나란히 */
   .card--store { grid-area: store; }
   .card--hours { grid-area: hours; }
   .card--parking { grid-area: parking; }
   .card--payment { grid-area: payment; }
   .card--amenities { grid-area: amenities; }
+  .card--photos { grid-area: photos; }
 }
 @media (min-width: 1024px) { .info-grid { gap: 20px; } }
 
@@ -1056,9 +1060,28 @@ a { color: inherit; }
 @media (min-width: 1024px) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 /* ==========================================================================
-   ⑥ 매장 사진
+   매장 사진 (매장 안내 안의 카드)
    ========================================================================== */
-.section--gallery { background: linear-gradient(180deg, var(--c-hanji) 0%, var(--c-paper) 100%); }
+.card__note { margin-left: auto; color: var(--c-ink-3); font-size: var(--fs-sm); }
+@media (max-width: 479px) { .card__note { flex-basis: 100%; margin-left: 48px; margin-top: -8px; } }
+.card--photos .photo-frame { background-color: var(--c-paper); }
+.card--photos [data-gallery-root] { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+@media (min-width: 760px) {
+  /* 사진 틀이 카드 높이를 꽉 채우도록: 큰 외관 1장 + 2×2 */
+  .card--photos .photo-frames {
+    flex: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: 1.5fr 1fr 1fr;
+    min-height: 440px;
+  }
+  .card--photos .photo-frame,
+  .card--photos .photo-frame:first-child { aspect-ratio: auto; grid-row: auto; }
+  .card--photos .photo-frame:first-child { grid-column: 1 / -1; }
+  .card--photos .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1200px) {
+  .card--photos .gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
 .photo-frames { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; list-style: none; }
 .photo-frame {

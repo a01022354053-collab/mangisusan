@@ -182,7 +182,6 @@
       <li><a href="#info">매장정보</a></li>
       <li><a href="#location">오시는 길</a></li>
       <li><a href="#guide">이용방법</a></li>
-      <li><a href="#gallery">사진</a></li>
       <li><a href="#reviews">리뷰</a></li>
     </ul>
     <a class="site-nav__call" href="tel:054-976-8892">
@@ -215,7 +214,7 @@
     <div class="container">
       <div class="section__head">
         <h2 class="section__title" id="info-title">매장 안내</h2>
-        <p class="section__desc">방문 전에 영업시간과 주차 안내를 확인해 주세요.</p>
+        <p class="section__desc">영업시간·주차·편의시설과 매장 사진을 확인해 주세요.</p>
       </div>
 
       <div class="info-grid">
@@ -232,15 +231,6 @@
               <dd><a class="phone-link" href="tel:054-976-8892">054-976-8892</a></dd>
             </div>
             <div class="detail-list__row">
-              <dt>주소</dt>
-              <dd>
-                <span class="detail-list__value">경북 칠곡군 북삼읍 북삼로 58</span>
-                <button type="button" class="text-btn" data-copy="경상북도 칠곡군 북삼읍 북삼로 58" data-copy-done="주소를 복사했습니다.">
-                  <svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>복사
-                </button>
-              </dd>
-            </div>
-            <div class="detail-list__row">
               <dt>위치</dt>
               <dd>북삼 <strong>인평체육공원 주차장 건너편</strong></dd>
             </div>
@@ -249,8 +239,8 @@
             <a class="btn btn--primary" href="tel:054-976-8892">
               <svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>전화 걸기
             </a>
-            <a class="btn btn--outline" href="#location">
-              <svg class="icon" aria-hidden="true"><use href="#i-map"/></svg>지도 보기
+            <a class="btn btn--outline" href="#location" data-open-directions>
+              <svg class="icon" aria-hidden="true"><use href="#i-navigation"/></svg>길찾기
             </a>
           </div>
         </article>
@@ -316,7 +306,7 @@
               <span class="parking-steps__tag parking-steps__tag--alt">만차 시</span>
               <div>
                 <strong>건너편 인평체육공원 주차장</strong>
-                <span class="parking-steps__desc">북삼로 65 · 지도에 <span class="map-p" aria-hidden="true">P</span> 표시</span>
+                <span class="parking-steps__desc">오시는 길 지도에 <span class="map-p" aria-hidden="true">P</span>로 표시</span>
               </div>
             </li>
           </ol>
@@ -427,6 +417,20 @@
           </p>
         </article>
 
+        <!-- 매장 사진 — 사진은 site-data.js 의 gallery 에서 관리 -->
+        <article class="card card--photos" id="gallery" aria-labelledby="gallery-title">
+          <div class="card__head">
+            <span class="card__icon" aria-hidden="true"><svg class="icon"><use href="#i-camera"/></svg></span>
+            <h3 class="card__title" id="gallery-title">매장 사진</h3>
+            <span class="card__note">외관부터 좌석, 주차장까지 미리 둘러보세요</span>
+          </div>
+          <div data-gallery-root>
+            <div class="empty-state">
+              <p class="empty-state__title">매장 사진을 준비하고 있습니다</p>
+            </div>
+          </div>
+        </article>
+
       </div>
     </div>
   </section>
@@ -508,24 +512,7 @@
   </section>
 
   <!-- ===================================================================
-       ⑥ 매장 사진 — site-data.js 의 gallery
-       =================================================================== -->
-  <section class="section section--gallery" id="gallery" aria-labelledby="gallery-title">
-    <div class="container">
-      <div class="section__head">
-        <h2 class="section__title" id="gallery-title">매장 사진</h2>
-        <p class="section__desc">외관부터 좌석, 주차장까지 미리 둘러보세요.</p>
-      </div>
-      <div data-gallery-root>
-        <div class="empty-state">
-          <p class="empty-state__title">매장 사진을 준비하고 있습니다</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================================================================
-       ⑦⑧ 리뷰 · 블로그 — site-data.js 의 reviews, 블로그 글은 /api/blog
+       ⑥⑦ 리뷰 · 블로그 — site-data.js 의 reviews, 블로그 글은 /api/blog
        =================================================================== -->
   <section class="section section--reviews" id="reviews" aria-labelledby="reviews-title">
     <div class="container">
