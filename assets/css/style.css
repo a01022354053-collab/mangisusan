@@ -817,6 +817,8 @@ a { color: inherit; }
 .map-frame__status {
   position: absolute;
   inset: 0;
+  z-index: 3;
+  background: var(--c-hanji);
   display: grid;
   place-content: center;
   justify-items: center;
@@ -828,6 +830,7 @@ a { color: inherit; }
 }
 .map-frame__status .icon { width: 28px; height: 28px; }
 .map-frame__canvas { position: absolute; inset: 0; }
+.map-frame__reason { color: var(--c-ink-3); font-size: var(--fs-xs); }
 .map-frame__hint {
   position: absolute;
   left: 10px;

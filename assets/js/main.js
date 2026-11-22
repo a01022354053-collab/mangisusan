@@ -601,36 +601,88 @@
 
   /* ======================================================================
    * 네이버 지도 — 매장과 인평체육공원 주차장을 함께 표시
+   * - 스크립트를 나중에 불러올 때는 공식 방식대로 callback 으로 '준비 완료'를 받아야 합니다.
+   *   (onload 만 기다리면 지도 기능이 덜 준비된 상태일 수 있음)
+   * - 주소 → 좌표는 서버(/api/geocode)로 먼저 하고, 실패하면 브라우저용 지오코더로 한 번 더 시도합니다.
+   * - 실패하면 원인을 작게 표시합니다: 인증 / 스크립트 연결 / 응답 지연 / 좌표 변환 / 표시 오류
    * ==================================================================== */
+  var MAP_ERRORS = {
+    auth: '네이버 지도 인증 실패',
+    script: '지도 스크립트 연결 실패',
+    timeout: '지도 응답 지연',
+    geocode: '주소 좌표 변환 실패',
+    render: '지도 표시 오류'
+  };
   var naverMapsPromise = null;
-  function loadNaverMaps() {
-    if (window.naver && window.naver.maps) return Promise.resolve();
+
+  function mapError(code) {
+    var error = new Error(MAP_ERRORS[code] || code);
+    error.code = code;
+    return error;
+  }
+
+  function naverReady() {
+    return !!(window.naver && window.naver.maps && typeof window.naver.maps.Map === 'function');
+  }
+
+  function loadNaverMaps(onAuthFailure) {
+    if (naverReady()) return Promise.resolve();
     if (naverMapsPromise) return naverMapsPromise;
     naverMapsPromise = new Promise(function (resolve, reject) {
-      window.navermap_authFailure = function () { reject(new Error('네이버 지도 인증 실패')); }; // 공식 인증 실패 알림
-      var script = document.createElement('script');
-      script.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + encodeURIComponent(NAVER_MAP_KEY_ID);
-      script.async = true;
-      script.onload = function () {
-        if (window.naver && window.naver.maps) resolve();
-        else reject(new Error('네이버 지도 스크립트를 읽지 못했습니다'));
+      var settled = false;
+      var timer = setTimeout(function () { finish(mapError('timeout')); }, 15000);
+      function finish(error) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (error) reject(error);
+        else resolve();
+      }
+      // 네이버가 정한 인증 실패 알림 함수 (지도를 그린 뒤에 호출될 수도 있음)
+      window.navermap_authFailure = function () {
+        finish(mapError('auth'));
+        if (onAuthFailure) onAuthFailure();
       };
-      script.onerror = function () { reject(new Error('네이버 지도 스크립트를 불러오지 못했습니다')); };
+      window.__mangisusanMapReady = function () {
+        finish(naverReady() ? null : mapError('script'));
+      };
+      var script = document.createElement('script');
+      script.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + encodeURIComponent(NAVER_MAP_KEY_ID) +
+        '&submodules=geocoder&callback=__mangisusanMapReady';
+      script.async = true;
+      script.onerror = function () { finish(mapError('script')); };
       document.head.appendChild(script);
     });
     return naverMapsPromise;
   }
 
-  function geocode(address) {
+  function serverGeocode(address) {
     return fetch('/api/geocode?query=' + encodeURIComponent(address))
       .then(function (res) {
-        if (!res.ok) throw new Error('좌표 변환 실패');
+        if (!res.ok) throw mapError('geocode');
         return res.json();
       })
       .then(function (data) {
-        if (typeof data.lat !== 'number' || typeof data.lng !== 'number' || isNaN(data.lat) || isNaN(data.lng)) throw new Error('좌표 없음');
-        return data;
+        if (typeof data.lat !== 'number' || typeof data.lng !== 'number' || isNaN(data.lat) || isNaN(data.lng)) throw mapError('geocode');
+        return { lat: data.lat, lng: data.lng };
       });
+  }
+
+  /** 서버 변환이 안 될 때: 네이버 지도 브라우저용 지오코더 (공식 submodules=geocoder) */
+  function browserGeocode(address) {
+    return new Promise(function (resolve, reject) {
+      var service = window.naver && window.naver.maps && window.naver.maps.Service;
+      if (!service || typeof service.geocode !== 'function') return reject(mapError('geocode'));
+      service.geocode({ query: address }, function (status, response) {
+        var first = response && response.v2 && response.v2.addresses && response.v2.addresses[0];
+        if (status !== service.Status.OK || !first) return reject(mapError('geocode'));
+        resolve({ lat: parseFloat(first.y), lng: parseFloat(first.x) });
+      });
+    });
+  }
+
+  function geocode(address) {
+    return serverGeocode(address).catch(function () { return browserGeocode(address); });
   }
 
   function pinContent(place) {
@@ -655,15 +707,74 @@
     if (desc) desc.textContent = '길찾기 화면으로 바로 이동';
   }
 
-  function showMapFallback(slot, statusEl) {
+  function showMapFallback(slot, statusEl, error) {
     var target = statusEl || h('div', { className: 'map-frame__status' });
+    var code = (error && error.code) || 'render';
     setContent(target,
       icon('map'),
       h('p', { text: '지도를 불러오지 못했습니다.' }),
-      h('p', { text: '아래 \'네이버 지도에서 보기\' 버튼을 이용해 주세요.' })
+      h('p', { text: '아래 \'네이버 지도에서 보기\' 버튼을 이용해 주세요.' }),
+      h('p', { className: 'map-frame__reason', text: '(' + (MAP_ERRORS[code] || MAP_ERRORS.render) + ')' })
     );
     if (!statusEl) slot.appendChild(target);
     target.hidden = false;
+    slot.setAttribute('data-map-error', code);
+    if (window.console) console.warn('[만기수산] 지도:', MAP_ERRORS[code] || code, error);
+  }
+
+  function drawMap(slot, statusEl, located) {
+    var maps = window.naver.maps;
+    var store = located.filter(function (p) { return p.place.kind === 'store'; })[0];
+    var canvas = h('div', { className: 'map-frame__canvas' });
+    slot.appendChild(canvas);
+    var touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    var center = new maps.LatLng(store.lat, store.lng);
+    var map = new maps.Map(canvas, {
+      center: center,
+      zoom: 17,
+      minZoom: 13,
+      zoomControl: true,
+      zoomControlOptions: { position: maps.Position.TOP_RIGHT },
+      scrollWheel: false,          // 페이지 스크롤이 지도에 걸리지 않도록
+      draggable: !touch,           // 휴대폰에서는 한 손가락 스크롤을 페이지에 양보
+      pinchZoom: !touch,
+      disableDoubleTapZoom: touch
+    });
+    if (statusEl) statusEl.hidden = true; // 지도가 만들어졌으면 안내 문구는 바로 치움
+
+    located.forEach(function (p) {
+      try {
+        new maps.Marker({
+          position: new maps.LatLng(p.lat, p.lng),
+          map: map,
+          title: p.place.name,
+          zIndex: p.place.kind === 'store' ? 100 : 50,
+          icon: { content: pinContent(p.place), anchor: new maps.Point(0, 0) }
+        });
+      } catch (e) {
+        new maps.Marker({ position: new maps.LatLng(p.lat, p.lng), map: map, title: p.place.name });
+      }
+    });
+
+    // 두 곳이 다 보이도록 범위 맞추기 (실패해도 지도는 그대로 둠)
+    if (located.length > 1) {
+      try {
+        var bounds = new maps.LatLngBounds(center, center);
+        located.forEach(function (p) { bounds.extend(new maps.LatLng(p.lat, p.lng)); });
+        map.fitBounds(bounds, { top: 80, right: 100, bottom: 50, left: 100 });
+        var keepZoom = function () {
+          if (map.getZoom() > 18) map.setZoom(18);
+          if (map.getZoom() < 16) map.setZoom(16);
+        };
+        if (maps.Event && typeof maps.Event.once === 'function') maps.Event.once(map, 'idle', keepZoom);
+        else setTimeout(keepZoom, 600);
+      } catch (e) {
+        map.setCenter(center);
+        map.setZoom(17);
+      }
+    }
+
+    if (touch) slot.appendChild(h('p', { className: 'map-frame__hint', text: '확대·축소는 오른쪽 위 버튼' }));
   }
 
   function initMap() {
@@ -673,63 +784,29 @@
     if (!slot || !places.length) return;
 
     whenNear(slot, function () {
-      Promise.all([
-        loadNaverMaps(),
-        Promise.all(places.map(function (place) {
-          return geocode(place.address).then(
-            function (pos) { return { place: place, lat: pos.lat, lng: pos.lng }; },
-            function () { return null; } // 하나가 실패해도 나머지는 표시
-          );
-        }))
-      ]).then(function (results) {
-        var located = results[1].filter(Boolean);
-        var store = located.filter(function (p) { return p.place.kind === 'store'; })[0];
-        if (!store) throw new Error('매장 좌표 없음');
-        updateKakaoRoute(store);
-
-        var maps = window.naver.maps;
-        var canvas = h('div', { className: 'map-frame__canvas' });
-        slot.appendChild(canvas);
-        var touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-        var center = new maps.LatLng(store.lat, store.lng);
-        var map = new maps.Map(canvas, {
-          center: center,
-          zoom: 17,
-          minZoom: 13,
-          zoomControl: true,
-          zoomControlOptions: { position: maps.Position.TOP_RIGHT },
-          scrollWheel: false,          // 페이지 스크롤이 지도에 걸리지 않도록
-          draggable: !touch,           // 휴대폰에서는 한 손가락 스크롤을 페이지에 양보
-          pinchZoom: !touch,
-          disableDoubleTapZoom: touch
+      loadNaverMaps(function () { showMapFallback(slot, statusEl, mapError('auth')); })
+        .then(function () {
+          return Promise.all(places.map(function (place) {
+            return geocode(place.address).then(
+              function (pos) { return { place: place, lat: pos.lat, lng: pos.lng }; },
+              function () { return null; } // 하나가 실패해도 나머지는 표시
+            );
+          }));
+        })
+        .then(function (results) {
+          var located = results.filter(Boolean);
+          var store = located.filter(function (p) { return p.place.kind === 'store'; })[0];
+          if (!store) throw mapError('geocode');
+          updateKakaoRoute(store);
+          try {
+            drawMap(slot, statusEl, located);
+          } catch (e) {
+            throw e && e.code ? e : mapError('render');
+          }
+        })
+        .catch(function (error) {
+          showMapFallback(slot, statusEl, error);
         });
-
-        located.forEach(function (p) {
-          new maps.Marker({
-            position: new maps.LatLng(p.lat, p.lng),
-            map: map,
-            title: p.place.name,
-            zIndex: p.place.kind === 'store' ? 100 : 50,
-            icon: { content: pinContent(p.place), anchor: new maps.Point(0, 0) }
-          });
-        });
-
-        if (located.length > 1) {
-          var bounds = new maps.LatLngBounds(center, center);
-          located.forEach(function (p) { bounds.extend(new maps.LatLng(p.lat, p.lng)); });
-          map.fitBounds(bounds, { top: 80, right: 100, bottom: 50, left: 100 }); // 이름표가 잘리지 않을 여백
-          // 주변 건물과 도로가 보이는 범위로 유지
-          maps.Event.once(map, 'idle', function () {
-            if (map.getZoom() > 18) map.setZoom(18);
-            if (map.getZoom() < 16) map.setZoom(16);
-          });
-        }
-
-        if (touch) slot.appendChild(h('p', { className: 'map-frame__hint', text: '확대·축소는 오른쪽 위 버튼' }));
-        if (statusEl) statusEl.hidden = true;
-      }).catch(function () {
-        showMapFallback(slot, statusEl);
-      });
     });
   }
 
