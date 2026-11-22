@@ -639,7 +639,7 @@ a { color: inherit; }
 .detail-list dd { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
 .detail-list__value { font-weight: 600; }
 
-.phone-link, .site-nav__call, .btn__sub, .site-footer a { white-space: nowrap; }
+.phone-link, .site-nav__call, .btn__sub, .site-footer a, a[href^="tel:"] { white-space: nowrap; } /* 전화번호가 줄바꿈되지 않게 */
 .phone-link {
   color: var(--c-ink);
   font-size: var(--fs-xl);
@@ -1656,6 +1656,150 @@ html.has-dialog { overflow: hidden; }
 }
 @media (min-width: 1024px) {
   .blog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+}
+
+/* ==========================================================================
+   한눈에 보기 — 오늘 카드 요약 칩, 준비 중인 메뉴
+   ========================================================================== */
+.today__facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; list-style: none; }
+.today__facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--c-paper);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+  color: var(--c-ink-2);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.today__facts .icon { width: 14px; height: 14px; color: var(--c-red); }
+
+.menu-soon__list { margin-top: 12px; }
+.menu-soon__list .chip { padding: 6px 14px; border-color: rgba(75, 48, 30, .25); background: rgba(255, 255, 255, .55); font-size: var(--fs-md); }
+.menu-soon .menu-cat__note { margin-top: 10px; }
+
+/* ==========================================================================
+   휴대폰(760px 미만) — 짧고 촘촘하게, 핵심이 먼저 보이도록
+   ========================================================================== */
+@media (max-width: 759px) {
+  /* 첫 화면: 상단을 낮춰 오늘 영업 카드(상태·전화·길찾기·요약)까지 한 화면에 */
+  .hero {
+    min-height: clamp(370px, 54vh, 470px);
+    min-height: clamp(370px, 54svh, 470px);
+    padding-top: 40px;
+    padding-bottom: 92px;
+  }
+  .hero__inner { gap: 12px; }
+  .hero__scroll { display: none; }
+  .hero__place { padding: 5px 12px; font-size: var(--fs-sm); }
+  .today { margin-top: -72px; }
+  .today__card { gap: 12px; padding: 16px; border-radius: 20px; }
+  .today__date { font-size: 1.6rem; }
+  .today__actions .btn--lg { min-height: 52px; }
+  .site-nav { margin-top: 14px; }
+
+  /* 섹션 간격과 제목 */
+  .section { padding-block: 44px; }
+  .section__head { gap: 4px; margin-bottom: 18px; }
+  .section__title { font-size: 2.35rem; }
+  .section__title::after { width: 64px; height: 10px; margin-top: 6px; }
+  .section__desc { font-size: var(--fs-sm); }
+
+  /* 메뉴판 */
+  .menu-board { padding: 24px 16px 20px; }
+  .menu-board::before { inset: 7px; }
+  .menu-board__seal { width: 40px; }
+  .menu-board__title { font-size: 1.9rem; }
+  .menu-board__notice { margin-bottom: 18px; padding: 8px 12px; font-size: var(--fs-sm); }
+  .menu-cats { gap: 20px; }
+  .menu-cat__title { font-size: 1.7rem; }
+
+  /* 매장 안내 카드 */
+  .info-grid { gap: 12px; }
+  .card { gap: 12px; padding: 16px; border-radius: 16px; }
+  .card__icon { width: 32px; height: 32px; }
+  .card__title { font-size: var(--fs-base); }
+  .card--store .card__title { font-size: var(--fs-lg); }
+  .card__note { margin-left: 42px; }
+  .detail-list__row { padding-block: 9px; }
+  .phone-link { font-size: var(--fs-lg); }
+  .hours-table th, .hours-table td { padding: 9px 8px; }
+  .hours-table td { font-size: var(--fs-base); }
+  .note-list { font-size: var(--fs-xs); }
+  .card__lead { font-size: var(--fs-md); }
+  .parking-steps__item { gap: 10px; padding: 10px 12px; }
+  .parking-steps__item strong { font-size: var(--fs-md); }
+
+  /* 결제수단: 아이콘을 이름 옆으로 */
+  .pay-list { gap: 6px; }
+  .pay { grid-template-columns: 22px minmax(0, 1fr); align-items: center; column-gap: 8px; padding: 10px; }
+  .pay__icon { width: 20px; height: 20px; margin: 0; }
+  .pay__name { font-size: var(--fs-md); }
+  .pay__desc { grid-column: 2; font-size: var(--fs-xs); }
+
+  /* 편의시설 */
+  .amenities { gap: 14px; }
+  .amenity-grid { gap: 6px; }
+  .amenity { gap: 2px; padding: 10px 4px; }
+  .amenity__icon { width: 22px; height: 22px; margin-bottom: 2px; }
+  .amenity__name { font-size: var(--fs-sm); }
+  .space { padding-block: 10px; }
+  .space__count { font-size: var(--fs-lg); }
+
+  /* 매장 사진: 옆으로 넘기는 한 줄 */
+  .card--photos .photo-frames,
+  .card--photos .gallery-grid {
+    display: grid;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 44%;
+    gap: 8px;
+    padding-bottom: 2px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .card--photos .photo-frames::-webkit-scrollbar,
+  .card--photos .gallery-grid::-webkit-scrollbar { display: none; }
+  .card--photos .photo-frame,
+  .card--photos .photo-frame:first-child { grid-column: auto; aspect-ratio: 4 / 3; scroll-snap-align: start; }
+  .card--photos .photo-frame__label { font-size: 1.5rem; }
+  .card--photos .gallery-grid > li { scroll-snap-align: start; }
+
+  /* 오시는 길: 지도는 낮게, 전화 줄은 하단 버튼과 겹치므로 생략 */
+  .location { gap: 14px; }
+  .map-frame { height: 240px; }
+  .location__value { font-size: var(--fs-lg); }
+  .detail-list__row--phone { display: none; }
+  .detail-list--compact .detail-list__row:nth-last-child(2) { padding-bottom: 0; border-bottom: 0; }
+
+  /* 이용방법: 옆으로 넘기는 한 줄 */
+  .guide-topics {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    margin-left: calc(-1 * var(--pad-l));
+    margin-right: calc(-1 * var(--pad-r));
+    padding: 4px var(--pad-r) 8px var(--pad-l);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: var(--pad-l);
+    scrollbar-width: none;
+  }
+  .guide-topics::-webkit-scrollbar { display: none; }
+  .guide-topic { flex: none; width: 92px; padding: 12px 4px 10px; scroll-snap-align: start; }
+  .guide-topic__icon { width: 40px; height: 40px; }
+  .guide-topic__name { font-size: var(--fs-sm); }
+  .guide-note { gap: 10px; margin-top: 14px; font-size: var(--fs-sm); }
+
+  /* 리뷰 */
+  .review-cta { gap: 12px; padding: 14px 16px; }
+  .review-cta__icon { width: 44px; height: 44px; }
+  .review-cta__title { font-size: 2.1rem; }
+  .blog { margin-top: 28px; }
+  .site-footer { padding-top: 40px; }
 }
 
 /* ---------- 동작 줄이기 설정 존중 ---------- */

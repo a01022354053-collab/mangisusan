@@ -420,16 +420,26 @@
       '로 문의해 주세요.'
     ]);
 
-    var cats = h('div', { className: 'menu-cats' }, menu.categories.map(function (category) {
-      var items = category.items || [];
+    // 메뉴가 있는 분류는 차림표로, 아직 비어 있는 분류는 '준비 중인 메뉴' 한 줄로 묶어 짧게
+    var filled = menu.categories.filter(function (c) { return (c.items || []).length; });
+    var empty = menu.categories.filter(function (c) { return !(c.items || []).length; });
+    var blocks = filled.map(function (category) {
       return h('section', { className: 'menu-cat', 'aria-label': category.label }, [
         h('h3', { className: 'menu-cat__title', text: category.label }),
         category.note ? h('p', { className: 'menu-cat__note', text: category.note }) : null,
-        items.length
-          ? h('ul', { className: 'menu-list' }, items.map(renderMenuItem))
-          : h('p', { className: 'menu-cat__empty', text: '메뉴 준비 중' })
+        h('ul', { className: 'menu-list' }, category.items.map(renderMenuItem))
       ]);
-    }));
+    });
+    if (empty.length) {
+      blocks.push(h('section', { className: 'menu-cat menu-soon', 'aria-label': '준비 중인 메뉴' }, [
+        h('h3', { className: 'menu-cat__title', text: '준비 중인 메뉴' }),
+        h('ul', { className: 'chip-list menu-soon__list' }, empty.map(function (c) {
+          return h('li', { className: 'chip', text: c.label });
+        })),
+        h('p', { className: 'menu-cat__note', text: '메뉴판을 확인하는 대로 올려 드릴게요.' })
+      ]));
+    }
+    var cats = h('div', { className: 'menu-cats' }, blocks);
 
     var updated = menu.lastUpdated && BH
       ? h('p', { className: 'menu-updated', text: '가격 기준일: ' + menu.lastUpdated.slice(0, 4) + '년 ' + BH.formatDateKey(menu.lastUpdated) })
@@ -451,7 +461,8 @@
     if (!guide.published) {
       // 실제 순서가 확인되지 않았으므로 번호 없이 '안내 예정 항목'만 표시
       setContent(root,
-        h('ul', { className: 'guide-topics', 'aria-label': '안내 예정 항목' }, guide.steps.map(function (step) {
+        // 휴대폰에서는 옆으로 넘기는 줄이 되므로 키보드로도 넘길 수 있게 tabindex
+        h('ul', { className: 'guide-topics', 'aria-label': '안내 예정 항목', tabindex: '0' }, guide.steps.map(function (step) {
           return h('li', { className: 'guide-topic' }, [
             h('span', { className: 'guide-topic__icon', 'aria-hidden': 'true' }, icon(GUIDE_ICONS[step.icon] || 'info')),
             h('span', { className: 'guide-topic__name', text: step.title })
@@ -491,7 +502,7 @@
 
     if (!photos.length) {
       // 사진이 오기 전: 분류별 사진 자리 (실제 사진처럼 보이지 않도록 빈 틀로 표시)
-      setContent(root, h('ul', { className: 'photo-frames', 'aria-label': '준비 중인 사진' }, gallery.categories.map(function (c) {
+      setContent(root, h('ul', { className: 'photo-frames', 'aria-label': '준비 중인 사진', tabindex: '0' }, gallery.categories.map(function (c) {
         return h('li', { className: 'photo-frame' }, [
           icon('camera'),
           h('span', { className: 'photo-frame__label', text: c.label }),
@@ -503,7 +514,7 @@
 
     var currentFilter = 'all';
     var visiblePhotos = photos;
-    var grid = h('ul', { className: 'gallery-grid' });
+    var grid = h('ul', { className: 'gallery-grid', 'aria-label': '매장 사진 목록', tabindex: '0' });
     var chips = h('div', { className: 'filter-chips', role: 'group', 'aria-label': '사진 분류' });
 
     function countOf(id) {
