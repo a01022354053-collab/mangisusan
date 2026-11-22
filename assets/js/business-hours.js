@@ -247,6 +247,13 @@
       });
   }
 
+  /** 서울 기준 오늘 날짜 표시: '11월 22일 일요일' */
+  function formatTodayLabel(date) {
+    var now = getZonedNow(date);
+    var d = parseDateKey(now.dateKey);
+    return d.month + '월 ' + d.day + '일 ' + WEEKDAY_LABELS[now.weekday] + '요일';
+  }
+
   function formatDateKey(dateKey) {
     var d = parseDateKey(dateKey);
     return d.month + '월 ' + d.day + '일(' + WEEKDAY_LABELS[weekdayOf(dateKey)] + ')';
@@ -266,6 +273,7 @@
     computeStatus: computeStatus,
     describeToday: describeToday,
     getUpcomingSpecialDays: getUpcomingSpecialDays,
-    formatDateKey: formatDateKey
+    formatDateKey: formatDateKey,
+    formatTodayLabel: formatTodayLabel
   };
 });

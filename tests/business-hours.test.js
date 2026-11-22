@@ -102,3 +102,9 @@ test('오늘 요약 문구', () => {
   assert.equal(BH.describeToday(statusAt('2026-11-21T12:00:00')), '오늘(토) 11:00~22:00 · 라스트오더 21:00');
   assert.equal(BH.describeToday(statusAt('2026-11-23T12:00:00')), '오늘(월) 정기휴무');
 });
+
+test('오늘 날짜 표시 (서울 기준)', () => {
+  assert.equal(BH.formatTodayLabel(seoul('2026-11-22T09:00:00')), '11월 22일 일요일');
+  // 미국 시간으로는 21일 저녁이지만 서울은 22일 오전
+  assert.equal(BH.formatTodayLabel(new Date('2026-11-22T01:00:00Z')), '11월 22일 일요일');
+});
