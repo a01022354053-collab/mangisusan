@@ -30,6 +30,7 @@ const NOT_REVIEW_WORDS = ['채용', '구인', '구직', '알바', '아르바이�
 const KNOWN = [
   { type: 'openapi', id: 'NAVER_CLIENT_ID', secret: 'NAVER_CLIENT_SECRET' },
   { type: 'openapi', id: 'NAVER_SEARCH_CLIENT_ID', secret: 'NAVER_SEARCH_CLIENT_SECRET' },
+  { type: 'apihub', id: 'NAVER_BLOG_CLIENT_ID', secret: 'NAVER_BLOG_CLIENT_SECRET' }, // NCP API HUB 에서 발급한 키
   { type: 'openapi', id: 'NAVER_BLOG_CLIENT_ID', secret: 'NAVER_BLOG_CLIENT_SECRET' },
   { type: 'apihub', id: 'NAVER_API_HUB_KEY_ID', secret: 'NAVER_API_HUB_KEY' },
   { type: 'apihub', id: 'NAVER_MAPS_CLIENT_ID', secret: 'NAVER_MAPS_CLIENT_SECRET' }
