@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="only light">
 <meta name="theme-color" content="#FBF8F2">
 <title>만기수산셀프매장 | 칠곡 북삼 민물장어</title>
-<meta name="description" content="칠곡 북삼 인평체육공원 주차장 건너편 민물장어 셀프매장 만기수산. 영업시간, 전화 예약, 주차 안내, 오시는 길을 확인하세요. ☎ 054-976-8892">
+<meta name="description" content="칠곡 북삼 인평체육공원 주차장 건너편 민물장어 전문점 만기수산셀프매장. 장어 100g당 9,500원, 영업시간, 이벤트, 주차 안내, 오시는 길을 확인하세요. ☎ 054-976-8892">
 <meta name="format-detection" content="telephone=no">
 <link rel="canonical" href="https://xn--ok0b43tiqfepb.kro.kr/">
 
@@ -108,6 +108,8 @@
   <symbol id="i-scale" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></symbol>
   <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
   <symbol id="i-table" viewBox="0 0 24 24"><path d="M2 10h20M5 10v10M19 10v10M7 10l1.5-5h7L17 10"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></symbol>
+  <symbol id="i-zoom" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></symbol>
   <symbol id="i-bowl" viewBox="0 0 24 24"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10M8 3c.3.4.6 1 0 2s-.3 1.7 0 2M12 3c.3.4.6 1 0 2s-.3 1.7 0 2M16 3c.3.4.6 1 0 2s-.3 1.7 0 2"/></symbol>
 </svg>
 
@@ -122,7 +124,7 @@
   <svg class="hero__brush hero__brush--br" aria-hidden="true" focusable="false"><use href="#brush-stroke"/></svg>
 
   <div class="hero__inner">
-    <p class="hero__eyebrow">칠곡 북삼 · 민물장어 셀프매장</p>
+    <p class="hero__eyebrow">칠곡 북삼 · 민물장어 전문점</p>
     <!-- 간판 로고에서 붓글씨와 도장만 분리한 이미지 (tools/extract_logo.py) -->
     <h1 class="brand">
       <span class="brand__lockup">
@@ -166,12 +168,20 @@
       <noscript><p class="today__hours">화~금 16:00~22:00 · 토~일 11:00~22:00 · 라스트오더 21:00 · 월요일 정기휴무</p></noscript>
     </div>
     <div class="today__actions" id="hero-actions">
-      <a class="btn btn--primary btn--lg" href="tel:054-976-8892">
+      <a class="action action--call" href="tel:054-976-8892">
         <svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>
-        <span>전화 예약·문의 <span class="btn__sub">054-976-8892</span></span>
+        <span class="action__label">전화 문의</span>
+        <span class="action__sub">054-976-8892</span>
       </a>
-      <a class="btn btn--outline btn--lg" href="#location" data-open-directions>
-        <svg class="icon" aria-hidden="true"><use href="#i-navigation"/></svg><span>길찾기</span>
+      <a class="action action--menu" href="#menu">
+        <svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>
+        <span class="action__label">메뉴 보기</span>
+        <span class="action__sub">장어 100g 9,500원</span>
+      </a>
+      <a class="action action--route" href="#location" data-open-directions>
+        <svg class="icon" aria-hidden="true"><use href="#i-navigation"/></svg>
+        <span class="action__label">길찾기</span>
+        <span class="action__sub">네이버·카카오</span>
       </a>
     </div>
   </div>
@@ -185,10 +195,11 @@
     </a>
     <ul class="site-nav__list" data-nav-list>
       <li><a href="#menu">메뉴판</a></li>
+      <li><a href="#events">이벤트</a></li>
       <li><a href="#info">매장정보</a></li>
-      <li><a href="#location">오시는 길</a></li>
-      <li><a href="#guide">이용방법</a></li>
+      <li><a href="#gallery">사진</a></li>
       <li><a href="#reviews">리뷰</a></li>
+      <li><a href="#location">오시는 길</a></li>
     </ul>
     <a class="site-nav__call" href="tel:054-976-8892">
       <svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>054-976-8892
@@ -199,7 +210,20 @@
 <main id="main" tabindex="-1">
 
   <!-- ===================================================================
-       ② 메뉴판(가격 안내) — 내용은 site-data.js 의 menu
+       ② 장어 소개 · 사장님 인사말 — site-data.js 의 intro / greeting
+       (사장님께 확인한 글이 들어오기 전에는 숨겨져 있습니다)
+       =================================================================== -->
+  <section class="section section--intro" id="about" aria-labelledby="about-title" data-intro-section hidden>
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title" id="about-title">만기수산 이야기</h2>
+      </div>
+      <div class="intro" data-intro-root></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       ③ 메뉴판(가격 안내) — 내용은 site-data.js 의 menu
        =================================================================== -->
   <section class="section section--menu" id="menu" aria-labelledby="menu-title">
     <div class="container">
@@ -214,13 +238,30 @@
   </section>
 
   <!-- ===================================================================
-       ③ 매장 기본 정보
+       ④ 이벤트 — 내용은 site-data.js 의 events (포스터: assets/img/events/)
+       =================================================================== -->
+  <section class="section section--events" id="events" aria-labelledby="events-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title" id="events-title">이벤트</h2>
+        <p class="section__desc">지금 매장에서 진행 중인 혜택입니다.</p>
+      </div>
+      <div data-events-root>
+        <div class="empty-state">
+          <p class="empty-state__title">진행 중인 이벤트는 매장에 문의해 주세요</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       ⑤ 매장 안내 (영업시간·결제수단·이용 방법·반찬 셀프바·편의시설)
        =================================================================== -->
   <section class="section section--info" id="info" aria-labelledby="info-title">
     <div class="container">
       <div class="section__head">
         <h2 class="section__title" id="info-title">매장 안내</h2>
-        <p class="section__desc">영업시간·주차·편의시설과 매장 사진을 확인해 주세요.</p>
+        <p class="section__desc">영업시간·이용 방법·편의시설을 확인해 주세요.</p>
       </div>
 
       <div class="info-grid">
@@ -290,6 +331,28 @@
             <li>라스트오더(21:00) 이후에는 주문이 마감됩니다.</li>
             <li>공휴일·명절 영업 여부는 전화로 확인해 주세요.</li>
           </ul>
+        </article>
+
+        <!-- 이용 방법 — site-data.js 의 guide -->
+        <article class="card card--guide" id="guide" aria-labelledby="guide-title">
+          <div class="card__head">
+            <span class="card__icon" aria-hidden="true"><svg class="icon"><use href="#i-info"/></svg></span>
+            <h3 class="card__title" id="guide-title">처음 오셨나요? 이용 방법</h3>
+          </div>
+          <p class="card__lead card__lead--accent">셀프로 이용하시는 것은 <strong>반찬</strong>입니다. 반찬은 셀프바에서 직접 가져다 드시면 됩니다.</p>
+          <div data-guide-root></div>
+        </article>
+
+        <!-- 반찬 셀프바 — site-data.js 의 selfbar -->
+        <article class="card card--selfbar" id="selfbar" aria-labelledby="selfbar-title">
+          <div class="card__head">
+            <span class="card__icon" aria-hidden="true"><svg class="icon"><use href="#i-bowl"/></svg></span>
+            <h3 class="card__title" id="selfbar-title">반찬 셀프바</h3>
+          </div>
+          <div class="selfbar" data-selfbar-root>
+            <div class="selfbar__photo selfbar__photo--empty" aria-hidden="true"><svg class="icon"><use href="#i-camera"/></svg>사진 준비 중</div>
+            <p class="selfbar__text">반찬은 셀프바에서 직접 가져다 드세요.</p>
+          </div>
         </article>
 
         <!-- 주차 안내 -->
@@ -423,26 +486,64 @@
           </p>
         </article>
 
-        <!-- 매장 사진 — 사진은 site-data.js 의 gallery 에서 관리 -->
-        <article class="card card--photos" id="gallery" aria-labelledby="gallery-title">
-          <div class="card__head">
-            <span class="card__icon" aria-hidden="true"><svg class="icon"><use href="#i-camera"/></svg></span>
-            <h3 class="card__title" id="gallery-title">매장 사진</h3>
-            <span class="card__note">외관부터 좌석, 주차장까지 미리 둘러보세요</span>
-          </div>
-          <div data-gallery-root>
-            <div class="empty-state">
-              <p class="empty-state__title">매장 사진을 준비하고 있습니다</p>
-            </div>
-          </div>
-        </article>
 
       </div>
     </div>
   </section>
 
   <!-- ===================================================================
-       ④ 네이버 지도 및 위치 안내 — 위치 정보는 site-data.js 의 map
+       ⑥ 매장 사진 — site-data.js 의 gallery (사진: assets/img/gallery/)
+       =================================================================== -->
+  <section class="section section--gallery" id="gallery" aria-labelledby="gallery-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title" id="gallery-title">매장 사진</h2>
+        <p class="section__desc">장어구이부터 매장 내부, 좌석, 주차장까지 미리 둘러보세요.</p>
+      </div>
+      <div data-gallery-root>
+        <div class="empty-state">
+          <p class="empty-state__title">매장 사진을 준비하고 있습니다</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       ⑦ 방문 후기 — site-data.js 의 reviews, 블로그 글은 /api/blog
+       =================================================================== -->
+  <section class="section section--reviews" id="reviews" aria-labelledby="reviews-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title" id="reviews-title">방문 후기</h2>
+        <p class="section__desc">다녀가신 손님들의 이야기를 확인해 보세요.</p>
+      </div>
+
+      <a class="review-cta" href="https://map.naver.com/p/entry/place/1004464648" target="_blank" rel="noopener" data-review-link>
+        <span class="review-cta__icon" aria-hidden="true"><svg class="icon"><use href="#i-message"/></svg></span>
+        <span class="review-cta__body">
+          <strong class="review-cta__title">리뷰</strong>
+          <span class="review-cta__desc">방문하신 손님들의 리뷰 보기<span class="visually-hidden"> (새 창)</span></span>
+        </span>
+        <svg class="icon review-cta__arrow" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+      </a>
+
+      <div class="blog">
+        <div class="blog__head">
+          <h3 class="blog__title">블로그 후기</h3>
+          <p class="blog__desc">네이버 블로그의 만기수산 방문 후기 중 대표 글을 골라 보여 드립니다.</p>
+          <p class="blog__hint" aria-hidden="true" hidden>옆으로 넘겨 보세요 →</p>
+        </div>
+        <div data-blog-root>
+          <div class="empty-state">
+            <p class="empty-state__desc">블로그 후기는 <a class="text-link" href="https://search.naver.com/search.naver?where=blog&amp;query=%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0%20%EB%B6%81%EC%82%BC" target="_blank" rel="noopener">네이버 블로그 검색</a>에서 볼 수 있습니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       ⑧ 오시는 길 (네이버 지도) — 위치 정보는 site-data.js 의 map
        =================================================================== -->
   <section class="section section--location" id="location" aria-labelledby="location-title">
     <div class="container">
@@ -499,64 +600,12 @@
     </div>
   </section>
 
-  <!-- ===================================================================
-       ⑤ 처음 방문하는 손님을 위한 이용 방법 — site-data.js 의 guide
-       =================================================================== -->
-  <section class="section section--guide" id="guide" aria-labelledby="guide-title">
-    <div class="container">
-      <div class="section__head">
-        <h2 class="section__title" id="guide-title">처음 오셨나요?</h2>
-        <p class="section__desc">셀프형 장어 전문점 이용 방법을 안내합니다.</p>
-      </div>
-      <div data-guide-root>
-        <div class="empty-state">
-          <p class="empty-state__title">이용 방법 안내를 준비하고 있습니다</p>
-          <p class="empty-state__desc">궁금한 점은 전화로 편하게 물어보세요.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================================================================
-       ⑥⑦ 리뷰 · 블로그 — site-data.js 의 reviews, 블로그 글은 /api/blog
-       =================================================================== -->
-  <section class="section section--reviews" id="reviews" aria-labelledby="reviews-title">
-    <div class="container">
-      <div class="section__head">
-        <h2 class="section__title" id="reviews-title">리뷰</h2>
-        <p class="section__desc">다녀가신 손님들의 이야기를 확인해 보세요.</p>
-      </div>
-
-      <a class="review-cta" href="https://map.naver.com/p/entry/place/1004464648" target="_blank" rel="noopener" data-review-link>
-        <span class="review-cta__icon" aria-hidden="true"><svg class="icon"><use href="#i-message"/></svg></span>
-        <span class="review-cta__body">
-          <strong class="review-cta__title">리뷰</strong>
-          <span class="review-cta__desc">방문하신 손님들의 리뷰 보기<span class="visually-hidden"> (새 창)</span></span>
-        </span>
-        <svg class="icon review-cta__arrow" aria-hidden="true"><use href="#i-arrow-right"/></svg>
-      </a>
-
-      <div class="blog">
-        <div class="blog__head">
-          <h3 class="blog__title">블로그 후기</h3>
-          <p class="blog__desc">네이버 블로그의 방문 후기 중 북삼·칠곡 만기수산 글만 골라 보여 드립니다.</p>
-          <p class="blog__hint" aria-hidden="true" hidden>옆으로 넘겨 보세요 →</p>
-        </div>
-        <div data-blog-root>
-          <div class="empty-state">
-            <p class="empty-state__desc">블로그 후기는 <a class="text-link" href="https://search.naver.com/search.naver?where=blog&amp;query=%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0%20%EB%B6%81%EC%82%BC" target="_blank" rel="noopener">네이버 블로그 검색</a>에서 볼 수 있습니다.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
 </main>
 
 <footer class="site-footer">
   <div class="container site-footer__inner">
     <p class="site-footer__brand">만기수산</p>
-    <p class="site-footer__name">만기수산셀프매장 · 칠곡 북삼 민물장어 셀프매장</p>
+    <p class="site-footer__name">만기수산셀프매장 · 칠곡 북삼 민물장어 전문점</p>
     <address class="site-footer__address">
       경상북도 칠곡군 북삼읍 북삼로 58<br>
       전화 <a href="tel:054-976-8892">054-976-8892</a>
@@ -570,10 +619,10 @@
 <nav class="tabbar" aria-label="하단 메뉴" data-tabbar>
   <ul class="tabbar__list" data-nav-list>
     <li><a class="tabbar__item" href="#menu"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg><span>메뉴판</span></a></li>
+    <li><a class="tabbar__item" href="#events"><svg class="icon" aria-hidden="true"><use href="#i-gift"/></svg><span>이벤트</span></a></li>
     <li><a class="tabbar__item" href="#info"><svg class="icon" aria-hidden="true"><use href="#i-store"/></svg><span>매장정보</span></a></li>
-    <li><a class="tabbar__item" href="#location"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span>오시는 길</span></a></li>
-    <li><a class="tabbar__item" href="#guide"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span>이용방법</span></a></li>
     <li><a class="tabbar__item" href="#reviews"><svg class="icon" aria-hidden="true"><use href="#i-message"/></svg><span>리뷰</span></a></li>
+    <li><a class="tabbar__item" href="#location"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span>오시는 길</span></a></li>
   </ul>
 </nav>
 

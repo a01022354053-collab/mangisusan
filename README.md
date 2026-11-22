@@ -8,7 +8,7 @@
 | 파일 | 역할 | 수정 빈도 |
 |---|---|---|
 | `index.html` | 화면 구조, 매장 기본 정보(영업시간·전화·주소·주차·결제·편의시설) | 가끔 |
-| `assets/js/site-data.js` | 임시휴무, 메뉴판, 이용 방법, 사진, 지도 위치, 리뷰 링크, 숨길 블로그 글 | **자주** |
+| `assets/js/site-data.js` | 임시휴무, 메뉴판, 이벤트, 장어 소개·인사말, 반찬 셀프바, 이용 방법, 사진, 지도 위치, 리뷰·블로그 | **자주** |
 | `assets/js/business-hours.js` | 오늘 날짜·영업 상태 계산 (서울 시간 기준) | 거의 없음 |
 | `assets/js/hero-water.js` | 상단 장어·물결·물방울 움직임 (Canvas) | 거의 없음 |
 | `assets/js/main.js` | 화면 동작 (상태 표시, 길찾기 창, 메뉴판, 지도, 블로그 카드 등) | 거의 없음 |
@@ -18,6 +18,7 @@
 | `assets/img/logo-text.webp`, `logo-seal.webp`, `logo-mangisusan.*` | 간판 로고에서 분리한 붓글씨·도장 (투명 배경) | - |
 | `assets/img/favicon-*.png`, `apple-touch-icon.png` | 브라우저 탭·홈 화면 아이콘 (도장) | - |
 | `assets/img/og-image.jpg` | 카카오톡 등 공유 미리보기 이미지 | - |
+| `assets/img/events/` | 이벤트 포스터 (`이름.webp` 목록용 560px, `이름-lg.webp` 크게 보기용 1200px) | 이벤트 바뀔 때 |
 | `logo.png` | 제공받은 원본 대표 이미지 (로고 추출 원본) | - |
 | `tools/extract_logo.py` | 원본에서 로고를 다시 추출하는 스크립트 | - |
 | `tests/` | 영업 상태·블로그 선별 테스트 (배포되지 않음) | - |
@@ -68,11 +69,28 @@ specialDays: [
 
 ### 메뉴판 — `site-data.js` 의 `menu`
 - 가격은 숫자: `amount: 50000` → `50,000원` / 모르면 `null` → `가격 확인 중`
-- 장어처럼 중량별 가격은 `options` 에 여러 줄: `{ label: '1kg', amount: 50000 }`
+- 장어처럼 중량별 가격은 `options` 에 여러 줄: `{ label: '100g당', amount: 9500 }`
+- `highlight: true` 인 메뉴(민물장어)는 메뉴판 맨 위에 크게 표시됩니다.
+- 할인 가격은 `{ amount: 27000, originalAmount: 30000 }` → 할인 전 가격에 취소선
+- 메뉴가 하나도 없는 분류(식사류·상차림비)는 '가격 확인 중'으로 묶여 보입니다. 가격을 넣으면 자동으로 메뉴판에 나타납니다.
 - 가격을 바꾼 날은 `lastUpdated: '2026-12-01'`
+
+### 이벤트 — `assets/img/events/` + `site-data.js` 의 `events`
+- 이벤트를 끝낼 때: `active: false` → 화면에서 바로 사라집니다. (지우지 않아도 됨)
+- 기간이 정해진 이벤트: `startsAt: '2026-12-01', endsAt: '2026-12-31'` → 그 기간(서울 날짜)에만 표시
+- `price` 판매가, `originalPrice` 할인 전 가격 → 'N원 할인' 이 자동 계산됩니다.
+- 진행 중인 이벤트가 하나도 없으면 이벤트 섹션과 메뉴의 '이벤트' 버튼이 함께 숨겨집니다.
+- 포스터를 바꿀 때는 새 파일 이름을 쓰세요. (캐시 때문에 이전 포스터가 보일 수 있음)
+
+### 장어 소개·사장님 인사말 — `site-data.js` 의 `intro`, `greeting`
+사장님께 확인한 글만 넣습니다. 둘 다 `null` 이면 섹션이 화면에 나오지 않습니다.
+
+### 반찬 셀프바 — `site-data.js` 의 `selfbar`
+`items` 에 반찬 이름, `photo` 에 셀프바 사진(`{ src, alt }`)을 넣으면 '사진 준비 중' 대신 표시됩니다.
 
 ### 사진 — `assets/img/gallery/` + `site-data.js` 의 `gallery.photos`
 - 긴 변 1600px 이하 WebP/JPG 권장. 사진을 넣으면 '사진 준비 중' 틀 대신 사진 목록과 크게 보기가 나타납니다.
+- `category` 는 `food`(장어구이) `exterior`(외관·입구) `interior`(매장 내부) `seats`(좌석·단체석) `selfbar`(반찬 셀프바) `parking`(주차장) 중 하나입니다.
 - 실제 매장 사진이 아니면 `isSample: true` → '예시 이미지' 표시.
 - 같은 이름으로 교체하면 최대 7일간 이전 사진이 보일 수 있으니 새 파일 이름을 쓰세요.
 
@@ -83,7 +101,8 @@ specialDays: [
 - `reviewUrl`: '리뷰' 버튼을 누르면 이동하는 주소
 - `hiddenPosts`: 관련 없는 블로그 글 주소를 넣으면 숨겨집니다.
 - `hiddenKeywords`: 제목이나 블로거 이름에 이 단어가 들어간 글은 숨겨집니다. 예) `['틀림없이 행복해질꾸야']`
-- `blogCount`: 보여 줄 블로그 후기 개수 (기본 9, 같은 블로거는 1개씩)
+- `blogCount`: 보여 줄 블로그 후기 개수 (현재 3, 같은 블로거는 1개씩)
+- `pinnedPosts`: 대표로 먼저 보여 줄 블로그 글 주소. 나머지는 최신 후기로 채워집니다.
 
 ### 지도 — `site-data.js` 의 `map`
 매장과 인평체육공원 주차장 주소로 좌표를 찾아 표시합니다. 주소를 바꾸면 지도 표시도 바뀝니다.

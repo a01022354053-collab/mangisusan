@@ -439,12 +439,33 @@ a { color: inherit; }
   font-size: var(--fs-md);
   font-weight: 700;
 }
-.today__actions { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 8px; }
+.today__actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+/* 주요 버튼: 전화 문의 · 메뉴 보기 · 길찾기 (아이콘 위, 글자 아래 — 휴대폰에서 누르기 쉽게) */
+.action {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  min-height: 74px;
+  padding: 10px 4px;
+  border-radius: var(--radius-inner);
+  border: 1.5px solid var(--c-line-strong);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  text-align: center;
+  text-decoration: none;
+}
+.action .icon { width: 24px; height: 24px; margin-bottom: 2px; }
+.action__label { font-size: var(--fs-md); font-weight: 800; line-height: 1.2; }
+.action__sub { color: var(--c-ink-3); font-size: .6875rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.action--call { border-color: transparent; background: var(--c-red); color: #fff; }
+.action--call .action__sub { color: rgba(255, 255, 255, .88); }
+.action--menu { border-color: transparent; background: var(--c-ink); color: #fff; }
+.action--menu .action__sub { color: rgba(255, 255, 255, .78); }
 
 @media (min-width: 760px) {
   .today__card { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px; padding: 22px 28px; }
-  .today__actions { grid-template-columns: auto auto; }
-  .today__actions .btn { padding-inline: 22px; }
+  .today__actions { grid-template-columns: repeat(3, 118px); }
 }
 
 /* ==========================================================================
@@ -562,8 +583,8 @@ a { color: inherit; }
 .section__head--light .section__desc { color: rgba(246, 239, 227, .82); }
 
 @media (min-width: 1024px) {
-  .section { padding-block: 96px; }
-  .section__head { margin-bottom: 40px; }
+  .section { padding-block: 72px; }
+  .section__head { margin-bottom: 32px; }
 }
 
 /* ---------- 카드 ---------- */
@@ -605,19 +626,19 @@ a { color: inherit; }
   .info-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-      "store   photos"
-      "hours   photos"
-      "parking payment"
+      "store   hours"
+      "payment hours"
+      "guide   guide"
+      "selfbar parking"
       "amenities amenities";
-    align-items: start;
   }
-  .card--photos { align-self: stretch; } /* 매장 카드·영업시간 옆에 사진을 나란히 */
   .card--store { grid-area: store; }
   .card--hours { grid-area: hours; }
   .card--parking { grid-area: parking; }
+  .card--guide { grid-area: guide; }
+  .card--selfbar { grid-area: selfbar; }
   .card--payment { grid-area: payment; }
   .card--amenities { grid-area: amenities; }
-  .card--photos { grid-area: photos; }
 }
 @media (min-width: 1024px) { .info-grid { gap: 20px; } }
 
@@ -992,7 +1013,9 @@ a { color: inherit; }
 
 @media (min-width: 760px) {
   .menu-board { padding: 44px 48px 36px; }
-  .menu-cats { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 56px; row-gap: 32px; }
+  /* 두 칸을 신문처럼 위에서부터 채워 빈칸이 생기지 않게 */
+  .menu-cats { display: block; columns: 2; column-gap: 56px; }
+  .menu-cats > .menu-cat { break-inside: avoid; margin-bottom: 30px; }
 }
 
 /* ==========================================================================
@@ -1069,26 +1092,8 @@ a { color: inherit; }
    ========================================================================== */
 .card__note { margin-left: auto; color: var(--c-ink-3); font-size: var(--fs-sm); }
 @media (max-width: 479px) { .card__note { flex-basis: 100%; margin-left: 48px; margin-top: -8px; } }
-.card--photos .photo-frame { background-color: var(--c-paper); }
-.card--photos [data-gallery-root] { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-@media (min-width: 760px) {
-  /* 사진 틀이 카드 높이를 꽉 채우도록: 큰 외관 1장 + 2×2 */
-  .card--photos .photo-frames {
-    flex: 1;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: 1.5fr 1fr 1fr;
-    min-height: 440px;
-  }
-  .card--photos .photo-frame,
-  .card--photos .photo-frame:first-child { aspect-ratio: auto; grid-row: auto; }
-  .card--photos .photo-frame:first-child { grid-column: 1 / -1; }
-  .card--photos .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (min-width: 1200px) {
-  .card--photos .gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-
 .photo-frames { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; list-style: none; }
+@media (min-width: 760px) and (max-width: 1023px) { .photo-frames { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .photo-frame {
   display: grid;
   place-items: center;
@@ -1104,13 +1109,15 @@ a { color: inherit; }
   color: var(--c-ink-3);
   text-align: center;
 }
-.photo-frame:first-child { grid-column: 1 / -1; aspect-ratio: 16 / 8; }
 .photo-frame .icon { width: 26px; height: 26px; color: var(--c-red); }
 .photo-frame__label { color: var(--c-ink); font-family: var(--font-brush); font-size: 1.9rem; line-height: 1; }
 .photo-frame__desc { font-size: var(--fs-xs); }
+/* 사진이 아직 없을 때는 자리 표시를 낮게 (빈 공간 줄이기). 실제 사진은 .gallery-grid 에서 크게 표시 */
+@media (min-width: 760px) and (max-width: 1023px) { .photo-frame { aspect-ratio: 16 / 9; } }
 @media (min-width: 1024px) {
-  .photo-frames { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-  .photo-frame:first-child { grid-column: span 2; grid-row: span 2; aspect-ratio: auto; }
+  .photo-frames { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+  .photo-frame { aspect-ratio: 1 / 1; }
+  .photo-frame__label { font-size: 1.55rem; }
 }
 
 .filter-chips { display: flex; gap: 6px; margin-bottom: 14px; padding: 2px; overflow-x: auto; scrollbar-width: none; }
@@ -1279,7 +1286,7 @@ a { color: inherit; }
    ========================================================================== */
 .site-footer {
   position: relative;
-  padding-block: 52px calc(52px + var(--quick-bar-h) + env(safe-area-inset-bottom, 0px));
+  padding-block: 52px calc(84px + var(--quick-bar-h) + env(safe-area-inset-bottom, 0px));
   background-color: var(--c-charcoal);
   background-image: radial-gradient(ellipse 60% 120px at 50% 0, rgba(226, 102, 46, .22), rgba(226, 102, 46, 0)), var(--tex-paper);
   color: rgba(246, 239, 227, .78);
@@ -1467,7 +1474,8 @@ html.has-dialog { overflow: hidden; }
   padding: calc(60px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px));
 }
 .lightbox__figure { display: grid; gap: 10px; justify-items: center; max-width: 100%; }
-.lightbox__img { max-width: 100%; max-height: calc(100vh - 160px); object-fit: contain; border-radius: 8px; }
+.lightbox__img { max-width: 100%; max-height: calc(100vh - 160px); object-fit: contain; border-radius: 8px; opacity: 0; transition: opacity .3s ease; }
+.lightbox__img.is-shown { opacity: 1; }
 @supports (height: 100dvh) { .lightbox__img { max-height: calc(100dvh - 160px); } }
 .lightbox__caption { font-size: var(--fs-md); text-align: center; }
 .lightbox .icon-btn { color: #fff; background: rgba(255, 255, 255, .12); }
@@ -1482,12 +1490,12 @@ html.has-dialog { overflow: hidden; }
    (head 의 스크립트가 html 에 js-reveal 을 붙였을 때만. 동작 줄이기 설정이면 붙지 않음)
    ========================================================================== */
 .js-reveal :is(.section__head, .card, .location__map, .location__info, .menu-board, .menu-cat,
-  .guide-topic, .guide-note, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head):not(.is-revealed) {
+  .guide-topic, .menu-hero, .event-feature, .event-card, .intro__story, .intro__greeting, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head):not(.is-revealed) {
   opacity: 0;
 }
 /* '슥' — 위에서 떨어져 살짝 튕기며 자리 잡음 */
 .js-reveal :is(.section__head, .card, .location__map, .location__info, .menu-cat,
-  .guide-topic, .guide-note, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head).is-revealed {
+  .guide-topic, .menu-hero, .event-feature, .event-card, .intro__story, .intro__greeting, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head).is-revealed {
   animation: drop-in .62s cubic-bezier(.2, 1.3, .45, 1) var(--reveal-delay, 0ms) backwards;
 }
 @keyframes drop-in {
@@ -1574,7 +1582,7 @@ html.has-dialog { overflow: hidden; }
    움직임 ② — 버튼에 마우스를 올리면 살짝 떠오르고 아이콘이 반응
    ========================================================================== */
 .btn, .text-btn, .map-link, .tabbar__item, .filter-chip, .icon-btn, .hero__place, .hero__scroll,
-.site-nav__call, .site-nav__list a, .guide-topic, .photo-frame, .review-cta {
+.site-nav__call, .site-nav__list a, .guide-topic, .photo-frame, .review-cta, .action, .event-poster, .event-card {
   transition: transform .22s cubic-bezier(.3, 1.4, .5, 1), box-shadow .22s ease, background-color .15s ease, border-color .15s ease, color .15s ease;
 }
 .btn--primary { position: relative; overflow: hidden; }
@@ -1602,6 +1610,11 @@ html.has-dialog { overflow: hidden; }
   .call-fab:hover .icon { animation: ring .6s ease; }
   .guide-topic:hover { transform: translateY(-5px) rotate(-1deg); box-shadow: 0 12px 22px rgba(59, 37, 23, .1); }
   .photo-frame:hover { transform: translateY(-4px) rotate(.4deg); }
+  .action:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(59, 37, 23, .14); }
+  .action:hover .icon { animation: pop .45s ease; }
+  .action--call:hover .icon { animation: ring .6s ease; }
+  .event-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(59, 37, 23, .12); }
+  .event-poster:hover img { transform: scale(1.04); }
   .review-cta:hover { transform: translateY(-3px) scale(1.01); }
   .hero__scroll:hover { transform: translateY(2px); }
   .icon-btn[data-close-dialog]:hover { transform: rotate(90deg); }
@@ -1615,7 +1628,7 @@ html.has-dialog { overflow: hidden; }
 /* 누르는 순간 꾹 눌리는 느낌 (휴대폰 터치 포함) */
 @media (prefers-reduced-motion: no-preference) {
   .btn:active, .text-btn:active, .map-link:active, .tabbar__item:active, .call-fab:active, .filter-chip:active,
-  .review-cta:active, .guide-topic:active, .site-nav__list a:active {
+  .review-cta:active, .guide-topic:active, .site-nav__list a:active, .action:active {
     transform: translateY(1px) scale(.97);
     transition-duration: .08s;
   }
@@ -1728,6 +1741,237 @@ html.has-dialog { overflow: hidden; }
 }
 
 /* ==========================================================================
+   메뉴판: 대표 가격 띠 (민물장어 100g당 9,500원) · 할인 표시
+   ========================================================================== */
+.menu-hero {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  margin: 0 auto 26px;
+  max-width: 560px;
+  padding: 18px 16px 16px;
+  border: 2px solid var(--c-red);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .6);
+  text-align: center;
+}
+.menu-hero::before { /* 도장처럼 살짝 겹친 테두리 */
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(168, 20, 27, .35);
+  border-radius: 10px;
+  pointer-events: none;
+}
+.menu-hero__name { color: var(--c-red-dark); font-family: var(--font-brush); font-size: 2.1rem; line-height: 1; -webkit-text-stroke: .4px currentColor; }
+.menu-hero__price { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 4px 10px; }
+.menu-hero__unit { color: var(--c-ink-2); font-size: var(--fs-lg); font-weight: 800; }
+.menu-hero__amount { color: var(--c-ink); font-size: clamp(2.2rem, 9vw, 3rem); font-weight: 900; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.menu-hero__desc { color: var(--c-ink-3); font-size: var(--fs-sm); }
+.menu-row__tag {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--c-red);
+  color: #fff;
+  font-size: .6875rem;
+  font-weight: 800;
+  vertical-align: 2px;
+  white-space: nowrap;
+}
+.menu-row__was { margin-right: 6px; color: var(--c-ink-3); font-size: var(--fs-sm); font-weight: 600; }
+/* 좁은 화면: 할인 전 가격을 위 줄로 올려 메뉴 이름이 덜 줄바꿈되게 */
+@media (max-width: 479px) {
+  .menu-row__line:has(.menu-row__was) { align-items: flex-end; }
+  .menu-row__line:has(.menu-row__was) .menu-row__dots { transform: translateY(-7px); }
+  .menu-row__price:has(.menu-row__was) { display: inline-flex; flex-direction: column; align-items: flex-end; line-height: 1.2; }
+  .menu-row__was { margin-right: 0; font-size: var(--fs-xs); }
+}
+
+/* ==========================================================================
+   이벤트
+   ========================================================================== */
+.section--events { background: linear-gradient(180deg, var(--c-hanji) 0%, var(--c-paper) 100%); }
+.event-badge {
+  display: inline-flex;
+  align-self: start;
+  justify-self: start;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--c-red);
+  color: #fff;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+}
+.event-poster {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 7 / 10;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-inner);
+  background: var(--c-line-soft);
+  cursor: zoom-in;
+}
+.event-poster img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
+.event-poster__zoom {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(27, 23, 20, .7);
+  color: #fff;
+}
+.event-poster__zoom .icon { width: 18px; height: 18px; }
+
+/* SNS 리뷰 이벤트: 넓은 카드 */
+.event-feature {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-card);
+  background: var(--c-surface);
+}
+.event-feature__body { display: grid; align-content: start; gap: 8px; min-width: 0; }
+.event-feature__title { font-size: var(--fs-lg); font-weight: 800; }
+.event-feature__reward { font-size: var(--fs-md); }
+.event-feature__reward strong { color: var(--c-red); font-size: var(--fs-lg); font-weight: 900; }
+.event-steps { display: grid; gap: 6px; list-style: none; counter-reset: ev; }
+.event-steps li { position: relative; padding-left: 30px; font-size: var(--fs-md); font-weight: 600; counter-increment: ev; }
+.event-steps li::before {
+  content: counter(ev);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--c-ink);
+  color: #fff;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+}
+
+/* 할인 세트·장어즙·추천 주류 */
+.event-grid { display: grid; gap: 10px; list-style: none; }
+.event-card {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr); /* 휴대폰: 포스터 작게 + 가격 크게 → 한눈에 비교 */
+  gap: 14px;
+  height: 100%;
+  padding: 12px;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-card);
+  background: var(--c-surface);
+}
+.event-card__body { display: grid; align-content: start; gap: 6px; min-width: 0; }
+.event-card__title { font-size: var(--fs-base); font-weight: 800; line-height: 1.35; }
+.event-card__desc { color: var(--c-ink-3); font-size: var(--fs-sm); }
+.event-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin-top: 2px; }
+.event-price__was { color: var(--c-ink-3); font-size: var(--fs-sm); font-weight: 600; }
+.event-price__now { color: var(--c-ink); font-size: var(--fs-xl); font-weight: 900; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.event-price__save { padding: 1px 8px; border-radius: 999px; background: var(--c-red-tint); color: var(--c-red); font-size: var(--fs-xs); font-weight: 800; }
+.event-prices { display: grid; gap: 2px; margin-top: 2px; list-style: none; }
+.event-prices__row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
+.event-prices__label { color: var(--c-ink-3); font-size: var(--fs-sm); font-weight: 700; }
+.event-prices__row strong { font-size: var(--fs-lg); font-weight: 900; }
+.event-prices__row.is-best strong { color: var(--c-red); }
+.event-period { color: var(--c-ink-3); font-size: var(--fs-xs); }
+.event-note { display: flex; gap: 6px; margin-top: 14px; color: var(--c-ink-3); font-size: var(--fs-sm); }
+.event-note .icon { margin-top: 3px; }
+
+@media (min-width: 760px) {
+  .event-feature { grid-template-columns: 200px minmax(0, 1fr); gap: 24px; padding: 20px; }
+  .event-feature__title { font-size: var(--fs-xl); }
+  .event-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .event-card { grid-template-columns: none; gap: 12px; }
+}
+@media (min-width: 1024px) {
+  .event-feature { grid-template-columns: 220px minmax(0, 1fr); align-items: center; }
+  .event-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ==========================================================================
+   장어 소개 · 사장님 인사말 (내용이 있을 때만 보임)
+   ========================================================================== */
+.intro { display: grid; gap: 18px; }
+.intro__story { display: grid; gap: 16px; }
+.intro__photo { overflow: hidden; border-radius: var(--radius-card); aspect-ratio: 4 / 3; max-width: 100%; }
+.intro__photo img { width: 100%; height: 100%; object-fit: cover; }
+.intro__text { display: grid; gap: 10px; }
+.intro__title { font-size: var(--fs-xl); font-weight: 800; }
+.intro__points { display: grid; gap: 6px; padding-left: 1.2em; }
+.intro__greeting {
+  margin: 0;
+  padding: 20px 22px;
+  border-left: 0;
+  border-radius: var(--radius-card);
+  background: var(--c-surface);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+}
+.intro__greeting p { font-size: var(--fs-base); line-height: 1.75; white-space: pre-line; }
+.intro__greeting footer { margin-top: 10px; color: var(--c-red-dark); font-family: var(--font-brush); font-size: 1.6rem; text-align: right; }
+@media (min-width: 1024px) { .intro__story { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: 32px; } }
+
+/* ==========================================================================
+   매장 안내: 이용 방법 · 반찬 셀프바
+   ========================================================================== */
+.card__lead--accent {
+  padding: 12px 14px;
+  border-radius: var(--radius-inner);
+  background: var(--c-red-tint);
+  color: var(--c-ink);
+}
+.card__lead--accent strong { color: var(--c-red); }
+.card--guide .guide-topics { justify-content: flex-start; }
+.guide-topic--self { border-color: var(--c-red); box-shadow: inset 0 0 0 1px var(--c-red); }
+.guide-topic__tag { padding: 0 8px; border-radius: 999px; background: var(--c-red); color: #fff; font-size: .6875rem; font-weight: 800; }
+.card--guide .guide-note { display: block; margin-top: 4px; color: var(--c-ink-3); font-size: var(--fs-sm); text-align: left; }
+@media (min-width: 760px) { .card--guide .guide-topics { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); } .card--guide .guide-topic { width: auto; } }
+
+.selfbar { display: grid; gap: 10px; }
+.selfbar__photo {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-inner);
+  background: var(--c-paper);
+  cursor: zoom-in;
+}
+.selfbar__photo img { width: 100%; height: 100%; object-fit: cover; }
+.selfbar__photo--empty {
+  aspect-ratio: 16 / 7;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  border: 1.5px dashed var(--c-line-strong);
+  color: var(--c-ink-3);
+  font-size: var(--fs-sm);
+  cursor: default;
+}
+.selfbar__photo--empty .icon { width: 26px; height: 26px; color: var(--c-red); }
+.selfbar__text { font-weight: 700; }
+
+/* ==========================================================================
    한눈에 보기 — 오늘 카드 요약 칩, 준비 중인 메뉴
    ========================================================================== */
 .today__facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; list-style: none; }
@@ -1767,7 +2011,7 @@ html.has-dialog { overflow: hidden; }
   .today { margin-top: -72px; }
   .today__card { gap: 12px; padding: 16px; border-radius: 20px; }
   .today__date { font-size: 1.6rem; }
-  .today__actions .btn--lg { min-height: 52px; }
+  .action { min-height: 70px; }
   .site-nav { margin-top: 14px; }
 
   /* 섹션 간격과 제목 */
@@ -1818,25 +2062,27 @@ html.has-dialog { overflow: hidden; }
   .space { padding-block: 10px; }
   .space__count { font-size: var(--fs-lg); }
 
-  /* 매장 사진: 옆으로 넘기는 한 줄 */
-  .card--photos .photo-frames,
-  .card--photos .gallery-grid {
+  /* 매장 사진: 옆으로 넘기는 한 줄 (같은 크기·비율) */
+  .section--gallery .photo-frames,
+  .section--gallery .gallery-grid {
     display: grid;
     grid-template-columns: none;
     grid-auto-flow: column;
     grid-auto-columns: 44%;
     gap: 8px;
-    padding-bottom: 2px;
+    margin-left: calc(-1 * var(--pad-l));
+    margin-right: calc(-1 * var(--pad-r));
+    padding: 2px var(--pad-r) 6px var(--pad-l);
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    scroll-padding-left: var(--pad-l);
     scrollbar-width: none;
   }
-  .card--photos .photo-frames::-webkit-scrollbar,
-  .card--photos .gallery-grid::-webkit-scrollbar { display: none; }
-  .card--photos .photo-frame,
-  .card--photos .photo-frame:first-child { grid-column: auto; aspect-ratio: 4 / 3; scroll-snap-align: start; }
-  .card--photos .photo-frame__label { font-size: 1.5rem; }
-  .card--photos .gallery-grid > li { scroll-snap-align: start; }
+  .section--gallery .photo-frames::-webkit-scrollbar,
+  .section--gallery .gallery-grid::-webkit-scrollbar { display: none; }
+  .section--gallery .photo-frame { aspect-ratio: 4 / 3; scroll-snap-align: start; }
+  .section--gallery .photo-frame__label { font-size: 1.5rem; }
+  .section--gallery .gallery-grid > li { scroll-snap-align: start; }
 
   /* 오시는 길: 지도는 낮게, 전화 줄은 하단 버튼과 겹치므로 생략 */
   .location { gap: 14px; }

@@ -27,25 +27,125 @@ window.SITE_DATA = {
    *      description: '짧은 설명' 또는 null,
    *      priceType: 'weight' (중량별) | 'fixed' (단일 가격) | 'per-person' (1인 기준),
    *      options: [ { label: '1kg', amount: 50000 } ],   // amount: 숫자(원), 모르면 null
+   *                     // 할인 중이면 { amount: 27000, originalAmount: 30000 } → 원래 가격에 줄
+   *      highlight: true,  // 메뉴판 맨 위에 크게 보여 줄 대표 가격 (장어)
+   *      badge: '할인 세트', // 이름 옆 작은 표시 (선택)
    *      soldOut: false
    *    }
    * ---------------------------------------------------------------------- */
   menu: {
-    lastUpdated: null, // 가격 기준일 'YYYY-MM-DD' (메뉴판 확인 후 입력)
+    lastUpdated: '2026-11-22', // 가격 기준일 (장어 가격·포스터 가격 확인일)
     categories: [
       {
         id: 'eel',
         label: '장어 메뉴',
-        note: '장어 가격은 중량에 따라 달라질 수 있습니다.',
+        note: '장어는 중량에 따라 가격이 정해집니다.',
         items: [
-          { name: '민물장어', description: null, priceType: 'weight', options: [{ label: null, amount: null }] }
+          { name: '민물장어', description: null, priceType: 'weight', highlight: true, options: [{ label: '100g당', amount: 9500 }] }
         ]
       },
       { id: 'meal', label: '식사류', note: null, items: [] },
-      { id: 'drink', label: '주류·음료', note: null, items: [] },
+      {
+        id: 'drink',
+        label: '주류·음료',
+        note: '아래 외 주류·음료 가격은 확인 중입니다.',
+        items: [
+          { name: '일품진로25 + 토닉 2병 + 레몬', badge: '할인 세트', priceType: 'fixed', options: [{ label: null, amount: 27000, originalAmount: 30000 }] },
+          { name: '화요25 + 토닉 2병 + 레몬', badge: '할인 세트', priceType: 'fixed', options: [{ label: null, amount: 26000, originalAmount: 29000 }] },
+          { name: '복분자 + 토닉 2병 + 레몬', badge: '할인 세트', priceType: 'fixed', options: [{ label: null, amount: 17000, originalAmount: 19000 }] },
+          { name: '벌떡주', description: '15가지 한약재를 달여 만든 술 · 375ml · 13%', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
+          { name: '카스 제로 (무알코올 맥주)', priceType: 'fixed', options: [{ label: null, amount: 4000 }] }
+        ]
+      },
       { id: 'table', label: '상차림비', note: null, items: [] },
-      { id: 'extra', label: '기타 추가 메뉴', note: null, items: [] }
+      {
+        id: 'extra',
+        label: '기타 추가 메뉴',
+        note: null,
+        items: [
+          { name: '장어즙 1박스', description: '80ml × 50포', priceType: 'fixed', options: [{ label: '현금가', amount: 120000 }, { label: '카드가', amount: 130000 }] }
+        ]
+      }
     ]
+  },
+
+  /* ------------------------------------------------------------------------
+   * 2-1) 이벤트 — 홍보 포스터(assets/img/events/)와 확인된 가격만 사용
+   *    - active: false 로 바꾸면 화면에서 바로 숨겨집니다. (종료된 이벤트)
+   *    - startsAt / endsAt: 'YYYY-MM-DD' 를 넣으면 그 기간에만 보입니다. (서울 날짜 기준, 모르면 null)
+   *    - price: 판매 가격, originalPrice: 할인 전 가격(있으면 할인 금액을 자동 계산해 강조)
+   *    - prices: 결제수단별 가격처럼 가격이 여러 개일 때 [{ label, amount }]
+   *    - steps / reward: 참여형 이벤트의 참여 방법과 혜택 (포스터에 적힌 그대로)
+   * ---------------------------------------------------------------------- */
+  events: [
+    {
+      id: 'sns-review', kind: 'feature', active: true, startsAt: null, endsAt: null,
+      badge: 'SNS 리뷰 이벤트', title: 'SNS 인증 네이버 리뷰 이벤트',
+      reward: '음료 1캔 무료',
+      steps: ['영수증 및 음식 사진 촬영', '네이버 및 SNS에 리뷰 작성', '직원 확인 후 음료 증정'],
+      image: 'assets/img/events/sns-review.webp', imageLarge: 'assets/img/events/sns-review-lg.webp',
+      alt: 'SNS 인증 네이버 리뷰 이벤트 포스터: 참여하면 음료 1캔 무료'
+    },
+    {
+      id: 'set-ilpum', kind: 'deal', active: true, startsAt: null, endsAt: null,
+      badge: '주류 할인 세트', title: '일품진로25 + 토닉 2병 + 레몬',
+      price: 27000, originalPrice: 30000,
+      image: 'assets/img/events/set-ilpum.webp', imageLarge: 'assets/img/events/set-ilpum-lg.webp',
+      alt: '일품진로25와 토닉워터 2병, 레몬 세트 포스터: 30,000원에서 27,000원'
+    },
+    {
+      id: 'set-hwayo', kind: 'deal', active: true, startsAt: null, endsAt: null,
+      badge: '주류 할인 세트', title: '화요25 + 토닉 2병 + 레몬',
+      price: 26000, originalPrice: 29000,
+      image: 'assets/img/events/set-hwayo.webp', imageLarge: 'assets/img/events/set-hwayo-lg.webp',
+      alt: '화요25와 토닉워터 2병, 레몬 가성비 세트 포스터: 29,000원에서 26,000원'
+    },
+    {
+      id: 'set-bokbunja', kind: 'deal', active: true, startsAt: null, endsAt: null,
+      badge: '주류 할인 세트', title: '복분자 + 토닉 2병 + 레몬',
+      price: 17000, originalPrice: 19000,
+      image: 'assets/img/events/set-bokbunja.webp', imageLarge: 'assets/img/events/set-bokbunja-lg.webp',
+      alt: '복분자주와 토닉워터 2병, 레몬 가성비 세트 포스터: 19,000원에서 17,000원'
+    },
+    {
+      id: 'eel-juice', kind: 'deal', active: true, startsAt: null, endsAt: null,
+      badge: '장어즙 판매', title: '장어즙 1박스 (80ml × 50포)',
+      prices: [{ label: '현금가', amount: 120000 }, { label: '카드가', amount: 130000 }],
+      image: 'assets/img/events/eel-juice.webp', imageLarge: 'assets/img/events/eel-juice-lg.webp',
+      alt: '장어즙 1박스 50포 포스터: 카드가 130,000원, 현금가 120,000원'
+    },
+    {
+      id: 'bulttuk', kind: 'deal', active: true, startsAt: null, endsAt: null,
+      badge: '추천 주류', title: '장어와 벌떡주', description: '15가지 한약재를 달여 만든 술 · 375ml · 13%',
+      price: 15000,
+      image: 'assets/img/events/bulttuk.webp', imageLarge: 'assets/img/events/bulttuk-lg.webp',
+      alt: '장어와 벌떡주 포스터: 15,000원'
+    },
+    {
+      id: 'cass-zero', kind: 'deal', active: true, startsAt: null, endsAt: null,
+      badge: '무알코올 맥주', title: '카스 제로',
+      price: 4000,
+      image: 'assets/img/events/cass-zero.webp', imageLarge: 'assets/img/events/cass-zero-lg.webp',
+      alt: '카스 제로 무알코올 맥주 포스터: 4,000원'
+    }
+  ],
+
+  /* ------------------------------------------------------------------------
+   * 2-2) 장어 소개 · 사장님 인사말 — 사장님께 확인한 글만 넣습니다.
+   *      둘 다 null 이면 '장어 소개' 섹션 자체가 화면에 나오지 않습니다.
+   *    intro 예) { title: '...', paragraphs: ['...'], points: ['국내산 ...'], photo: { src, alt } }
+   *    greeting 예) { text: '...', name: '만기수산 대표 ○○○' }
+   * ---------------------------------------------------------------------- */
+  intro: null,
+  greeting: null,
+
+  /* ------------------------------------------------------------------------
+   * 2-3) 반찬 셀프바 — 셀프로 이용하는 것은 반찬입니다.
+   *    items: 셀프바에 있는 반찬 이름 (확인 후 입력), photo: { src, alt }
+   * ---------------------------------------------------------------------- */
+  selfbar: {
+    items: [],
+    photo: null
   },
 
   /* ------------------------------------------------------------------------
@@ -63,7 +163,7 @@ window.SITE_DATA = {
       { id: 'weigh', icon: 'scale', title: '중량·가격 확인', description: null, photo: null },
       { id: 'pre-grill', icon: 'flame', title: '초벌구이', description: null, photo: null },
       { id: 'table', icon: 'table', title: '테이블 이용', description: null, photo: null },
-      { id: 'self-bar', icon: 'bowl', title: '셀프바 이용', description: null, photo: null },
+      { id: 'self-bar', icon: 'bowl', title: '반찬 셀프바', description: null, photo: null },
       { id: 'order-pay', icon: 'card', title: '추가 주문·결제', description: null, photo: null }
     ]
   },
@@ -81,10 +181,11 @@ window.SITE_DATA = {
    * ---------------------------------------------------------------------- */
   gallery: {
     categories: [
-      { id: 'exterior', label: '외관' },
-      { id: 'interior', label: '내부' },
-      { id: 'food', label: '음식' },
-      { id: 'seats', label: '좌석' },
+      { id: 'food', label: '장어구이' },
+      { id: 'exterior', label: '외관·입구' },
+      { id: 'interior', label: '매장 내부' },
+      { id: 'seats', label: '좌석·단체석' },
+      { id: 'selfbar', label: '반찬 셀프바' },
       { id: 'parking', label: '주차장' }
     ],
     photos: []
@@ -108,11 +209,13 @@ window.SITE_DATA = {
    *      '만기수산' + 지역명(북삼·칠곡·인평)이 함께 있는 글만 골라 보여 줍니다.
    *    - hiddenPosts: 관련 없거나 숨기고 싶은 글의 주소를 넣으면 보이지 않습니다.
    *    - hiddenKeywords: 제목이나 블로거 이름에 이 단어가 들어간 글은 보이지 않습니다. (띄어쓰기 무시)
+   *    - pinnedPosts: 대표로 먼저 보여 줄 글 주소 (검색 결과에 있는 글만 적용, 나머지는 최신순으로 채움)
    *        예) 'https://blog.naver.com/someone/223000000000'
    * ---------------------------------------------------------------------- */
   reviews: {
     reviewUrl: 'https://map.naver.com/p/search/%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0/place/1004464648?placePath=%2Freview%3FabtExp%3DN-NMB-COV-26-MED%3A3%26bk_query%3D%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0%26entry%3Dpll%26from%3Dmap%26fromNxList%3Dtrue%26fromPanelNum%3D2%26locale%3Dko%26searchText%3D%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0%26svcName%3Dmap_pcv5%26timestamp%3D202611221422%26type%3DphotoView&bk_query=%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0&entry=pll&from=nx&fromNxList=true&searchType=place&c=15.00,0,0,0,dh',
-    blogCount: 9,
+    blogCount: 3,
+    pinnedPosts: [],
     hiddenPosts: [],
     hiddenKeywords: ['틀림없이 행복해질꾸야', '양포 생아구']
   }

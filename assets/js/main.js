@@ -7,7 +7,10 @@
  *   initCallFab         떠 있는 전화 버튼 (첫 화면 전화 버튼이 보이는 동안 숨김)
  *   initDialogs         길찾기 선택 창 · 닫기
  *   initCopyButtons     주소·전화번호 복사
- *   renderMenu          메뉴판 (site-data.js → menu)
+ *   renderMenu          메뉴판 (site-data.js → menu, 대표 가격은 맨 위에 크게)
+ *   renderEvents        이벤트 (site-data.js → events, 진행 중인 것만)
+ *   renderIntro         장어 소개·사장님 인사말 (내용이 있을 때만)
+ *   renderSelfbar       반찬 셀프바
  *   renderGuide         이용 방법 (site-data.js → guide)
  *   renderGallery       매장 사진 + 크게 보기 (site-data.js → gallery)
  *   initMap             네이버 지도 (site-data.js → map, 좌표는 /api/geocode)
@@ -346,25 +349,95 @@
   }
 
   /* ======================================================================
-   * 메뉴판
+   * 가격 표시 공통
    * ==================================================================== */
   var priceFormatter = window.Intl ? new Intl.NumberFormat('ko-KR') : null;
 
+  function won(amount) {
+    return (priceFormatter ? priceFormatter.format(amount) : String(amount)) + '원';
+  }
+
   function formatPrice(option) {
     if (option.amountText) return option.amountText;
-    if (typeof option.amount === 'number') {
-      return (priceFormatter ? priceFormatter.format(option.amount) : String(option.amount)) + '원';
-    }
+    if (typeof option.amount === 'number') return won(option.amount);
     return null; // 확인 후 입력
   }
 
+  /** 가격 + (할인 전 가격에 줄) */
   function priceSpan(option) {
     var formatted = formatPrice(option);
-    return formatted
-      ? h('span', { className: 'menu-row__price', text: formatted })
-      : h('span', { className: 'menu-row__price menu-row__price--pending', text: '가격 확인 중' });
+    if (!formatted) return h('span', { className: 'menu-row__price menu-row__price--pending', text: '가격 확인 중' });
+    var was = typeof option.originalAmount === 'number' && option.originalAmount > option.amount;
+    return h('span', { className: 'menu-row__price' }, [
+      was ? h('s', { className: 'menu-row__was' }, [h('span', { className: 'visually-hidden', text: '할인 전 ' }), won(option.originalAmount)]) : null,
+      was ? h('span', { className: 'visually-hidden', text: ', 할인 가격 ' }) : null,
+      formatted
+    ]);
   }
 
+  /* ======================================================================
+   * 사진 크게 보기 (매장 사진·이벤트 포스터 공용)
+   *   openLightbox([{ src, alt, caption, isSample }], 시작 번호)
+   * ==================================================================== */
+  var lightboxState = { items: [], index: 0, img: null };
+
+  function showLightboxItem(index) {
+    var lightbox = document.getElementById('lightbox');
+    var caption = lightbox && lightbox.querySelector('[data-lightbox-caption]');
+    var items = lightboxState.items;
+    if (!caption || !items.length) return;
+    if (!lightboxState.img) {
+      lightboxState.img = h('img', { className: 'lightbox__img', alt: '' });
+      caption.parentNode.insertBefore(lightboxState.img, caption);
+    }
+    lightboxState.index = (index + items.length) % items.length;
+    var item = items[lightboxState.index];
+    var img = lightboxState.img;
+    img.classList.remove('is-shown');
+    img.onload = function () { img.classList.add('is-shown'); }; // 사진이 바뀔 때 부드럽게 나타남
+    img.src = item.src;
+    img.alt = item.alt || '';
+    if (img.complete) img.classList.add('is-shown');
+    var text = (item.caption || '') + (items.length > 1 ? '  ' + (lightboxState.index + 1) + ' / ' + items.length : '');
+    caption.textContent = (item.isSample ? '[예시 이미지] ' : '') + text.trim();
+    var single = items.length < 2;
+    lightbox.querySelector('[data-lightbox-prev]').hidden = single;
+    lightbox.querySelector('[data-lightbox-next]').hidden = single;
+  }
+
+  function openLightbox(items, index) {
+    var lightbox = document.getElementById('lightbox');
+    if (!lightbox || typeof lightbox.showModal !== 'function') {
+      window.open(items[index].src, '_blank', 'noopener');
+      return;
+    }
+    lightboxState.items = items;
+    showLightboxItem(index);
+    openDialog(lightbox);
+  }
+
+  function initLightbox() {
+    var lightbox = document.getElementById('lightbox');
+    if (!lightbox) return;
+    lightbox.querySelector('[data-lightbox-prev]').addEventListener('click', function () { showLightboxItem(lightboxState.index - 1); });
+    lightbox.querySelector('[data-lightbox-next]').addEventListener('click', function () { showLightboxItem(lightboxState.index + 1); });
+    lightbox.addEventListener('keydown', function (event) {
+      if (event.key === 'ArrowLeft') showLightboxItem(lightboxState.index - 1);
+      if (event.key === 'ArrowRight') showLightboxItem(lightboxState.index + 1);
+    });
+    var startX = null;
+    lightbox.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+    lightbox.addEventListener('touchend', function (e) {
+      if (startX === null) return;
+      var dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 50) showLightboxItem(lightboxState.index + (dx < 0 ? 1 : -1));
+      startX = null;
+    });
+  }
+
+  /* ======================================================================
+   * 메뉴판 — 대표 가격(장어 100g당)을 맨 위에 크게
+   * ==================================================================== */
   function defaultOptionLabel(item) {
     if (item.priceType === 'weight') return '중량별';
     if (item.priceType === 'per-person') return '1인';
@@ -377,9 +450,13 @@
       item.name,
       item.soldOut ? h('span', { className: 'menu-row__badge', text: '품절' }) : null
     ]);
-    var desc = item.description ? h('p', { className: 'menu-row__desc', text: item.description }) : null;
+    // '할인 세트' 같은 표시와 설명은 이름 아래 줄에 (휴대폰에서 이름이 밀리지 않게)
+    var desc = item.badge || item.description ? h('p', { className: 'menu-row__desc' }, [
+      item.badge ? h('span', { className: 'menu-row__tag', text: item.badge }) : null,
+      item.description || null
+    ]) : null;
 
-    // 가격이 하나면 이름 옆에 바로, 여러 개(중량별 등)면 아래에 줄마다 표시
+    // 가격이 하나면 이름 옆에 바로, 여러 개(현금가·카드가 등)면 아래에 줄마다 표시
     if (options.length === 1) {
       var label = options[0].label || defaultOptionLabel(item);
       return h('li', { className: 'menu-row' }, [
@@ -413,6 +490,20 @@
     });
   }
 
+  /** 대표 가격 띠: '민물장어 100g당 9,500원' */
+  function renderMenuHighlight(item) {
+    var option = (item.options || [])[0] || {};
+    var price = formatPrice(option);
+    return h('div', { className: 'menu-hero' }, [
+      h('p', { className: 'menu-hero__name', text: item.name }),
+      h('p', { className: 'menu-hero__price' }, [
+        option.label ? h('span', { className: 'menu-hero__unit', text: option.label }) : null,
+        h('strong', { className: 'menu-hero__amount', text: price || '가격 확인 중' })
+      ]),
+      item.description ? h('p', { className: 'menu-hero__desc', text: item.description }) : null
+    ]);
+  }
+
   function renderMenu() {
     var root = document.querySelector('[data-menu-root]');
     var menu = DATA.menu;
@@ -429,9 +520,18 @@
       '로 문의해 주세요.'
     ]);
 
-    // 메뉴가 있는 분류는 차림표로, 아직 비어 있는 분류는 '준비 중인 메뉴' 한 줄로 묶어 짧게
-    var filled = menu.categories.filter(function (c) { return (c.items || []).length; });
-    var empty = menu.categories.filter(function (c) { return !(c.items || []).length; });
+    // 대표 가격(highlight)은 위쪽 띠로, 나머지는 분류별 차림표로
+    var highlights = [];
+    var categories = menu.categories.map(function (category) {
+      var items = (category.items || []).filter(function (item) {
+        if (item.highlight) { highlights.push(item); return false; }
+        return true;
+      });
+      return { label: category.label, note: category.note, items: items, hadHighlight: items.length !== (category.items || []).length };
+    });
+
+    var filled = categories.filter(function (c) { return c.items.length; });
+    var empty = categories.filter(function (c) { return !c.items.length && !c.hadHighlight; });
     var blocks = filled.map(function (category) {
       return h('section', { className: 'menu-cat', 'aria-label': category.label }, [
         h('h3', { className: 'menu-cat__title', text: category.label }),
@@ -440,12 +540,12 @@
       ]);
     });
     if (empty.length) {
-      blocks.push(h('section', { className: 'menu-cat menu-soon', 'aria-label': '준비 중인 메뉴' }, [
-        h('h3', { className: 'menu-cat__title', text: '준비 중인 메뉴' }),
+      blocks.push(h('section', { className: 'menu-cat menu-soon', 'aria-label': '가격 확인 중인 메뉴' }, [
+        h('h3', { className: 'menu-cat__title', text: '가격 확인 중' }),
         h('ul', { className: 'chip-list menu-soon__list' }, empty.map(function (c) {
           return h('li', { className: 'chip', text: c.label });
         })),
-        h('p', { className: 'menu-cat__note', text: '메뉴판을 확인하는 대로 올려 드릴게요.' })
+        h('p', { className: 'menu-cat__note', text: '확인되는 대로 올려 드릴게요. 궁금하시면 전화로 문의해 주세요.' })
       ]));
     }
     var cats = h('div', { className: 'menu-cats' }, blocks);
@@ -454,11 +554,180 @@
       ? h('p', { className: 'menu-updated', text: '가격 기준일: ' + menu.lastUpdated.slice(0, 4) + '년 ' + BH.formatDateKey(menu.lastUpdated) })
       : null;
 
-    setContent(root, head, notice, cats, updated);
+    setContent(root, head, notice, highlights.map(renderMenuHighlight), cats, updated);
   }
 
   /* ======================================================================
-   * 이용 방법
+   * 이벤트 — 진행 중인 것만 (active, startsAt~endsAt)
+   * ==================================================================== */
+  function eventIsLive(event) {
+    if (!event || event.active === false) return false;
+    if (!BH || (!event.startsAt && !event.endsAt)) return true;
+    var today = BH.getZonedNow(new Date()).dateKey;
+    if (event.startsAt && today < event.startsAt) return false;
+    if (event.endsAt && today > event.endsAt) return false;
+    return true;
+  }
+
+  function eventPeriod(event) {
+    if (!BH || (!event.startsAt && !event.endsAt)) return null;
+    var from = event.startsAt ? BH.formatDateKey(event.startsAt) : '';
+    var to = event.endsAt ? BH.formatDateKey(event.endsAt) : '';
+    return '기간: ' + from + (from || to ? ' ~ ' : '') + to;
+  }
+
+  function eventPoster(event, onOpen) {
+    if (!isSafeUrl(event.image)) return null;
+    return h('button', {
+      type: 'button',
+      className: 'event-poster',
+      'aria-label': (event.alt || event.title) + ' — 포스터 크게 보기',
+      onclick: onOpen
+    }, [
+      h('img', { src: event.image, alt: '', loading: 'lazy', decoding: 'async' }),
+      h('span', { className: 'event-poster__zoom', 'aria-hidden': 'true' }, icon('zoom'))
+    ]);
+  }
+
+  function eventPrice(event) {
+    if (Array.isArray(event.prices) && event.prices.length) {
+      return h('ul', { className: 'event-prices' }, event.prices.map(function (p, i) {
+        return h('li', { className: 'event-prices__row' + (i === 0 ? ' is-best' : '') }, [
+          h('span', { className: 'event-prices__label', text: p.label }),
+          h('strong', { text: won(p.amount) })
+        ]);
+      }));
+    }
+    if (typeof event.price !== 'number') return null;
+    var hasDiscount = typeof event.originalPrice === 'number' && event.originalPrice > event.price;
+    return h('div', { className: 'event-price' }, [
+      hasDiscount ? h('s', { className: 'event-price__was' }, [h('span', { className: 'visually-hidden', text: '할인 전 ' }), won(event.originalPrice)]) : null,
+      h('strong', { className: 'event-price__now' }, [hasDiscount ? h('span', { className: 'visually-hidden', text: '할인 가격 ' }) : null, won(event.price)]),
+      hasDiscount ? h('span', { className: 'event-price__save', text: won(event.originalPrice - event.price) + ' 할인' }) : null
+    ]);
+  }
+
+  function renderEvents() {
+    var root = document.querySelector('[data-events-root]');
+    var section = document.getElementById('events');
+    var events = (DATA.events || []).filter(eventIsLive);
+    if (!root) return;
+    if (!events.length) {
+      // 진행 중인 이벤트가 하나도 없으면 섹션과 바로가기를 숨김
+      if (section) section.hidden = true;
+      Array.prototype.forEach.call(document.querySelectorAll('a[href="#events"]'), function (a) {
+        var li = a.closest('li');
+        if (li) li.hidden = true;
+      });
+      return;
+    }
+
+    var posters = events.filter(function (e) { return isSafeUrl(e.imageLarge || e.image); }).map(function (e) {
+      return { src: e.imageLarge || e.image, alt: e.alt || e.title, caption: e.title };
+    });
+    function opener(event) {
+      return function () {
+        var index = 0;
+        posters.forEach(function (p, i) { if (p.caption === event.title) index = i; });
+        openLightbox(posters, index);
+      };
+    }
+
+    var features = events.filter(function (e) { return e.kind === 'feature'; });
+    var deals = events.filter(function (e) { return e.kind !== 'feature'; });
+
+    var featureEls = features.map(function (event) {
+      return h('article', { className: 'event-feature' }, [
+        eventPoster(event, opener(event)),
+        h('div', { className: 'event-feature__body' }, [
+          h('p', { className: 'event-badge', text: event.badge || '이벤트' }),
+          h('h3', { className: 'event-feature__title', text: event.title }),
+          event.reward ? h('p', { className: 'event-feature__reward' }, ['참여하시면 ', h('strong', { text: event.reward })]) : null,
+          Array.isArray(event.steps) && event.steps.length
+            ? h('ol', { className: 'event-steps' }, event.steps.map(function (step) { return h('li', { text: step }); }))
+            : null,
+          eventPeriod(event) ? h('p', { className: 'event-period', text: eventPeriod(event) }) : null
+        ])
+      ]);
+    });
+
+    var dealList = deals.length ? h('ul', { className: 'event-grid' }, deals.map(function (event) {
+      return h('li', null, h('article', { className: 'event-card' }, [
+        eventPoster(event, opener(event)),
+        h('div', { className: 'event-card__body' }, [
+          h('p', { className: 'event-badge', text: event.badge || '이벤트' }),
+          h('h3', { className: 'event-card__title', text: event.title }),
+          event.description ? h('p', { className: 'event-card__desc', text: event.description }) : null,
+          eventPrice(event),
+          eventPeriod(event) ? h('p', { className: 'event-period', text: eventPeriod(event) }) : null
+        ])
+      ]));
+    })) : null;
+
+    setContent(root, featureEls, dealList,
+      h('p', { className: 'event-note' }, [icon('info', 'icon--xs'), '행사 기간과 세부 조건은 매장에 문의해 주세요. 포스터를 누르면 크게 볼 수 있습니다.']));
+  }
+
+  /* ======================================================================
+   * 장어 소개 · 사장님 인사말 (확인된 글이 있을 때만 섹션을 보여 줌)
+   * ==================================================================== */
+  function renderIntro() {
+    var section = document.querySelector('[data-intro-section]');
+    var root = document.querySelector('[data-intro-root]');
+    var intro = DATA.intro;
+    var greeting = DATA.greeting;
+    if (!section || !root || (!intro && !greeting)) return;
+
+    var parts = [];
+    if (intro) {
+      parts.push(h('div', { className: 'intro__story' }, [
+        intro.photo && isSafeUrl(intro.photo.src)
+          ? h('figure', { className: 'intro__photo' }, h('img', { src: intro.photo.src, alt: intro.photo.alt || '', loading: 'lazy', decoding: 'async' }))
+          : null,
+        h('div', { className: 'intro__text' }, [
+          intro.title ? h('h3', { className: 'intro__title', text: intro.title }) : null,
+          (intro.paragraphs || []).map(function (p) { return h('p', { text: p }); }),
+          Array.isArray(intro.points) && intro.points.length
+            ? h('ul', { className: 'intro__points' }, intro.points.map(function (p) { return h('li', { text: p }); }))
+            : null
+        ])
+      ]));
+    }
+    if (greeting && greeting.text) {
+      parts.push(h('blockquote', { className: 'intro__greeting' }, [
+        h('p', { text: greeting.text }),
+        greeting.name ? h('footer', { text: greeting.name }) : null
+      ]));
+    }
+    setContent(root, parts);
+    section.hidden = false;
+  }
+
+  /* ======================================================================
+   * 반찬 셀프바 — 사진·반찬 이름은 확인된 것만
+   * ==================================================================== */
+  function renderSelfbar() {
+    var root = document.querySelector('[data-selfbar-root]');
+    var selfbar = DATA.selfbar || {};
+    if (!root) return;
+    var photo = selfbar.photo && isSafeUrl(selfbar.photo.src)
+      ? h('button', {
+          type: 'button',
+          className: 'selfbar__photo',
+          'aria-label': (selfbar.photo.alt || '반찬 셀프바 사진') + ' — 크게 보기',
+          onclick: function () { openLightbox([{ src: selfbar.photo.src, alt: selfbar.photo.alt, caption: '반찬 셀프바' }], 0); }
+        }, h('img', { src: selfbar.photo.thumb || selfbar.photo.src, alt: '', loading: 'lazy', decoding: 'async' }))
+      : h('div', { className: 'selfbar__photo selfbar__photo--empty', 'aria-hidden': 'true' }, [icon('camera'), '사진 준비 중']);
+    var items = (selfbar.items || []).filter(Boolean);
+    setContent(root,
+      photo,
+      h('p', { className: 'selfbar__text', text: '반찬은 셀프바에서 직접 가져다 드세요.' }),
+      items.length ? h('ul', { className: 'chip-list selfbar__items' }, items.map(function (name) { return h('li', { className: 'chip', text: name }); })) : null
+    );
+  }
+
+  /* ======================================================================
+   * 이용 방법 (매장 안내 안의 카드)
    * ==================================================================== */
   var GUIDE_ICONS = { door: 'door', fish: 'fish', scale: 'scale', flame: 'flame', table: 'table', bowl: 'bowl', card: 'card' };
 
@@ -472,15 +741,13 @@
       setContent(root,
         // 휴대폰에서는 옆으로 넘기는 줄이 되므로 키보드로도 넘길 수 있게 tabindex
         h('ul', { className: 'guide-topics', 'aria-label': '안내 예정 항목', tabindex: '0' }, guide.steps.map(function (step) {
-          return h('li', { className: 'guide-topic' }, [
+          return h('li', { className: 'guide-topic' + (step.id === 'self-bar' ? ' guide-topic--self' : '') }, [
             h('span', { className: 'guide-topic__icon', 'aria-hidden': 'true' }, icon(GUIDE_ICONS[step.icon] || 'info')),
-            h('span', { className: 'guide-topic__name', text: step.title })
+            h('span', { className: 'guide-topic__name', text: step.title }),
+            step.id === 'self-bar' ? h('span', { className: 'guide-topic__tag', text: '셀프' }) : null
           ]);
         })),
-        h('div', { className: 'guide-note' }, [
-          h('p', { text: '실제 이용 순서와 사진은 확인 후 안내해 드릴게요. 처음 오시면 직원에게 편하게 물어보세요.' }),
-          h('a', { className: 'btn btn--outline', href: 'tel:' + PHONE }, [icon('phone'), '전화 문의 ' + PHONE])
-        ])
+        h('p', { className: 'guide-note', text: '자세한 이용 순서와 사진은 확인 후 안내해 드릴게요. 처음 오시면 직원에게 편하게 물어보세요.' })
       );
       return;
     }
@@ -498,7 +765,7 @@
   }
 
   /* ======================================================================
-   * 매장 사진 + 크게 보기
+   * 매장 사진 — 같은 비율의 틀, 누르면 크게 보기
    * ==================================================================== */
   function renderGallery() {
     var root = document.querySelector('[data-gallery-root]');
@@ -535,6 +802,12 @@
         .filter(function (c) { return c.count > 0; })
     );
 
+    function asItems(list) {
+      return list.map(function (photo) {
+        return { src: photo.src, alt: photo.alt, caption: photo.caption || categoryLabel[photo.category] || '', isSample: photo.isSample };
+      });
+    }
+
     function drawGrid() {
       visiblePhotos = currentFilter === 'all' ? photos : photos.filter(function (p) { return p.category === currentFilter; });
       setContent(grid, visiblePhotos.map(function (photo, index) {
@@ -543,13 +816,14 @@
           type: 'button',
           className: 'gallery-item',
           'aria-label': (photo.alt || label) + (photo.isSample ? ' (예시 이미지)' : '') + ' — 크게 보기',
-          onclick: function () { openLightbox(index); }
+          onclick: function () { openLightbox(asItems(visiblePhotos), index); }
         }, [
           h('img', { src: photo.thumb && isSafeUrl(photo.thumb) ? photo.thumb : photo.src, alt: '', loading: 'lazy', decoding: 'async' }),
           label ? h('span', { className: 'gallery-item__label', 'aria-hidden': 'true', text: label }) : null,
           photo.isSample ? h('span', { className: 'sample-badge', 'aria-hidden': 'true', text: '예시 이미지' }) : null
         ]));
       }));
+      observeReveal(grid);
     }
 
     filters.forEach(function (filter) {
@@ -565,55 +839,6 @@
         }
       }, [filter.label, h('span', { className: 'filter-chip__count', text: String(filter.count) })]));
     });
-
-    var lightbox = document.getElementById('lightbox');
-    var lbCaption = lightbox && lightbox.querySelector('[data-lightbox-caption]');
-    var lbImg = null;
-    var lbIndex = 0;
-
-    function showPhoto(index) {
-      if (!lbCaption) return;
-      if (!lbImg) {
-        lbImg = h('img', { className: 'lightbox__img', alt: '' });
-        lbCaption.parentNode.insertBefore(lbImg, lbCaption);
-      }
-      lbIndex = (index + visiblePhotos.length) % visiblePhotos.length;
-      var photo = visiblePhotos[lbIndex];
-      lbImg.src = photo.src;
-      lbImg.alt = photo.alt || '';
-      var caption = (photo.caption || categoryLabel[photo.category] || '') + '  ' + (lbIndex + 1) + ' / ' + visiblePhotos.length;
-      lbCaption.textContent = (photo.isSample ? '[예시 이미지] ' : '') + caption.trim();
-      var single = visiblePhotos.length < 2;
-      lightbox.querySelector('[data-lightbox-prev]').hidden = single;
-      lightbox.querySelector('[data-lightbox-next]').hidden = single;
-    }
-
-    function openLightbox(index) {
-      if (!lightbox || typeof lightbox.showModal !== 'function') {
-        window.open(visiblePhotos[index].src, '_blank', 'noopener');
-        return;
-      }
-      showPhoto(index);
-      openDialog(lightbox);
-    }
-
-    if (lightbox && !lightbox.hasAttribute('data-ready')) {
-      lightbox.setAttribute('data-ready', '');
-      lightbox.querySelector('[data-lightbox-prev]').addEventListener('click', function () { showPhoto(lbIndex - 1); });
-      lightbox.querySelector('[data-lightbox-next]').addEventListener('click', function () { showPhoto(lbIndex + 1); });
-      lightbox.addEventListener('keydown', function (event) {
-        if (event.key === 'ArrowLeft') showPhoto(lbIndex - 1);
-        if (event.key === 'ArrowRight') showPhoto(lbIndex + 1);
-      });
-      var startX = null;
-      lightbox.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
-      lightbox.addEventListener('touchend', function (e) {
-        if (startX === null) return;
-        var dx = e.changedTouches[0].clientX - startX;
-        if (Math.abs(dx) > 50) showPhoto(lbIndex + (dx < 0 ? 1 : -1));
-        startX = null;
-      });
-    }
 
     drawGrid();
     setContent(root, chips, grid);
@@ -885,7 +1110,7 @@
 
     var root = document.querySelector('[data-blog-root]');
     if (!root) return;
-    var count = reviews.blogCount || 9;
+    var count = reviews.blogCount || 3;
     var hidden = (reviews.hiddenPosts || []).map(function (u) { return String(u).replace(/^http:/, 'https:'); });
     var squash = function (text) { return String(text || '').replace(/\s+/g, '').toLowerCase(); };
     var hiddenWords = (reviews.hiddenKeywords || []).map(squash).filter(Boolean);
@@ -904,8 +1129,14 @@
           return res.json();
         })
         .then(function (data) {
+          var pinned = (reviews.pinnedPosts || []).map(function (u) { return String(u).replace(/^http:/, 'https:'); });
           var posts = (data.items || [])
             .filter(function (post) { return post && post.title && /^https:\/\//.test(post.url) && !isHidden(post); })
+            .sort(function (a, b) {
+              // 사장님이 고른 대표 글을 먼저, 나머지는 서버가 준 최신순 그대로
+              var pa = pinned.indexOf(a.url); var pb = pinned.indexOf(b.url);
+              return (pa === -1 ? 999 : pa) - (pb === -1 ? 999 : pb);
+            })
             .slice(0, count);
           if (!posts.length) {
             setContent(root, blogFallback('아직 소개할 블로그 후기가 없습니다.'));
@@ -936,8 +1167,9 @@
    * - 숨김은 <head> 의 작은 스크립트가 첫 화면 전에 걸어 둡니다(깜빡임 방지).
    *   그 스크립트가 숨기지 않은 경우(동작 줄이기·구형 브라우저)에는 아무것도 하지 않습니다.
    * ==================================================================== */
-  var REVEAL_SELECTOR = '.section__head, .card, .location__map, .location__info, .menu-board, .menu-cat, ' +
-    '.guide-topic, .guide-note, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head';
+  var REVEAL_SELECTOR = '.section__head, .card, .location__map, .location__info, .menu-board, .menu-cat, .menu-hero, ' +
+    '.event-feature, .event-card, .intro__story, .intro__greeting, ' +
+    '.guide-topic, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head';
   var THUD_IMPACT_MS = 520; // 메뉴판이 바닥에 닿는 순간 (style.css 의 thud 와 맞춤)
   var STEP_MS = 110;        // '슥슥슥' 간격
   var revealObserver = null;
@@ -1009,7 +1241,7 @@
           el.removeEventListener('animationstart', onStart);
           setTimeout(function () { thudImpact(el); }, THUD_IMPACT_MS);
         });
-      } else if (el.classList.contains('menu-cat')) {
+      } else if (el.classList.contains('menu-cat') || el.classList.contains('menu-hero')) {
         // 메뉴판이 '쿵' 하고 닿은 뒤에 메뉴 분류가 차례로 내려앉음
         delay = Math.max(0, thudLandsAt + 140 - now) + catStep * 90;
         catStep++;
@@ -1095,7 +1327,11 @@
     safely('전화 버튼', initCallFab);
     safely('대화상자', initDialogs);
     safely('복사 버튼', initCopyButtons);
+    safely('크게 보기', initLightbox);
+    safely('장어 소개', renderIntro);
     safely('메뉴', renderMenu);
+    safely('이벤트', renderEvents);
+    safely('셀프바', renderSelfbar);
     safely('이용 방법', renderGuide);
     safely('사진', renderGallery);
     safely('지도', initMap);
