@@ -111,7 +111,7 @@ window.SITE_DATA = {
    * ---------------------------------------------------------------------- */
   reviews: {
     reviewUrl: 'https://map.naver.com/p/search/%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0/place/1004464648?placePath=%2Freview%3FabtExp%3DN-NMB-COV-26-MED%3A3%26bk_query%3D%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0%26entry%3Dpll%26from%3Dmap%26fromNxList%3Dtrue%26fromPanelNum%3D2%26locale%3Dko%26searchText%3D%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0%26svcName%3Dmap_pcv5%26timestamp%3D202611221422%26type%3DphotoView&bk_query=%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0&entry=pll&from=nx&fromNxList=true&searchType=place&c=15.00,0,0,0,dh',
-    blogCount: 4,
+    blogCount: 9,
     hiddenPosts: []
   }
 };

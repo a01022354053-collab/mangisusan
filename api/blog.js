@@ -4,6 +4,8 @@
 // - '만기수산 북삼', '만기수산 칠곡', '만기수산셀프매장'으로 검색합니다.
 //   검색어에 지역명이 들어가므로 네이버가 본문 전체에서 지역까지 맞는 글을 찾아 주고,
 //   여기서는 제목·요약에 '만기수산'이 실제로 있는 글만 남깁니다. (다른 지역 동명 업체 방지)
+// - 방문 후기만: 채용·부동산·광고 문의 같은 글은 빼고, 먹고 다녀온 이야기가 있는 글만 남깁니다.
+// - 다양하게: 같은 블로거의 글은 가장 최근 1개만 보여 줍니다.
 // - 검색 API가 주지 않는 썸네일 이미지는 만들거나 가져오지 않습니다.
 //
 // 키 찾는 순서
@@ -17,7 +19,13 @@ const https = require('https');
 
 const QUERIES = ['만기수산 북삼', '만기수산 칠곡', '만기수산셀프매장'];
 const MUST_INCLUDE = '만기수산';
-const MAX_ITEMS = 12;
+const MAX_ITEMS = 20;
+// 후기로 볼 수 있는 표현 (하나라도 있으면 후기)
+const REVIEW_WORDS = ['후기', '리뷰', '방문', '다녀', '다녀옴', '맛집', '먹', '장어', '내돈내산', '재방문', '외식',
+  '데이트', '가족', '모임', '회식', '저녁', '점심', '추천', '셀프'];
+// 후기가 아닌 글 (하나라도 있으면 제외)
+const NOT_REVIEW_WORDS = ['채용', '구인', '구직', '알바', '아르바이트', '모집', '공고', '매매', '임대', '분양', '부동산',
+  '상가', '양도', '광고문의', '협찬문의', '체험단모집'];
 
 const KNOWN = [
   { type: 'openapi', id: 'NAVER_CLIENT_ID', secret: 'NAVER_CLIENT_SECRET' },
@@ -67,9 +75,15 @@ function isSafeLink(url) {
   }
 }
 
-/** 제목·요약에 '만기수산'이 있는 글만 남기고 중복 제거 후 최신순 */
+function isReview(text) {
+  if (NOT_REVIEW_WORDS.some((word) => text.includes(word))) return false;
+  return REVIEW_WORDS.some((word) => text.includes(word));
+}
+
+/** '만기수산' 방문 후기만 남기고, 중복·같은 블로거 글을 정리해 최신순으로 */
 function filterPosts(items) {
   const seen = new Set();
+  const authors = new Set();
   return (items || [])
     .map((item) => ({
       title: cleanText(item.title),
@@ -81,11 +95,18 @@ function filterPosts(items) {
     .filter((post) => {
       if (!post.title || !isSafeLink(post.url) || seen.has(post.url)) return false;
       const text = (post.title + ' ' + post.summary).replace(/\s+/g, '');
-      const relevant = text.includes(MUST_INCLUDE);
+      const relevant = text.includes(MUST_INCLUDE) && isReview(text);
       if (relevant) seen.add(post.url);
       return relevant;
     })
     .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
+    .filter((post) => {
+      // 같은 블로거는 가장 최근 글 하나만
+      const key = (post.author || post.url.split('/').slice(0, 4).join('/')).toLowerCase();
+      if (authors.has(key)) return false;
+      authors.add(key);
+      return true;
+    })
     .slice(0, MAX_ITEMS);
 }
 
@@ -208,6 +229,7 @@ async function handler(req, res) {
 module.exports = handler;
 module.exports.cleanText = cleanText;
 module.exports.filterPosts = filterPosts;
+module.exports.isReview = isReview;
 module.exports.findCredentials = findCredentials;
 module.exports.fetchPosts = fetchPosts;
 module.exports._setRequester = (fn) => { requester = fn || defaultRequester; };

@@ -31,7 +31,7 @@ test('제목·요약에 "만기수산"이 없으면 제외 (만기 적금·수�
   const posts = blog.filterPosts([
     item(),
     item({ link: 'https://blog.naver.com/b/2', title: '적금 만기 기념 북삼 수산시장', description: '칠곡 북삼 수산물' }),
-    item({ link: 'https://blog.naver.com/c/3', title: '구미 장어 맛집', description: '북삼 만기 수산 셀프매장 후기' })
+    item({ link: 'https://blog.naver.com/c/3', title: '구미 장어 맛집', description: '북삼 만기 수산 셀프매장 후기', bloggername: '블로거C' })
   ]);
   assert.deepEqual(posts.map((p) => p.url), ['https://blog.naver.com/a/1', 'https://blog.naver.com/c/3']);
   assert.equal(posts[0].date, '2026-11-01');
@@ -40,12 +40,31 @@ test('제목·요약에 "만기수산"이 없으면 제외 (만기 적금·수�
 
 test('중복·위험 링크 제거, 최신순 정렬', () => {
   const posts = blog.filterPosts([
-    item({ postdate: '20260101', link: 'https://blog.naver.com/x/1' }),
-    item({ postdate: '20261020', link: 'https://blog.naver.com/x/2' }),
-    item({ postdate: '20261020', link: 'https://blog.naver.com/x/2' }),
+    item({ postdate: '20260101', link: 'https://blog.naver.com/x/1', bloggername: '가' }),
+    item({ postdate: '20261020', link: 'https://blog.naver.com/x/2', bloggername: '나' }),
+    item({ postdate: '20261020', link: 'https://blog.naver.com/x/2', bloggername: '나' }),
     item({ link: 'javascript:alert(1)' })
   ]);
   assert.deepEqual(posts.map((p) => p.url), ['https://blog.naver.com/x/2', 'https://blog.naver.com/x/1']);
+});
+
+test('방문 후기만: 채용·부동산 글은 빼고, 후기 표현이 없는 글도 뺌', () => {
+  const posts = blog.filterPosts([
+    item({ link: 'https://blog.naver.com/r/1', title: '만기수산 홀서빙 알바 채용', description: '북삼 만기수산 직원 모집', bloggername: '사장' }),
+    item({ link: 'https://blog.naver.com/r/2', title: '만기수산 앞 상가 임대', description: '북삼로 상가', bloggername: '부동산' }),
+    item({ link: 'https://blog.naver.com/r/3', title: '만기수산', description: '북삼읍 북삼로', bloggername: '기록' }),
+    item({ link: 'https://blog.naver.com/r/4', title: '북삼 만기수산 내돈내산 후기', description: '가족 외식', bloggername: '손님' })
+  ]);
+  assert.deepEqual(posts.map((p) => p.url), ['https://blog.naver.com/r/4']);
+});
+
+test('다양하게: 같은 블로거 글은 가장 최근 1개만', () => {
+  const posts = blog.filterPosts([
+    item({ link: 'https://blog.naver.com/s/1', postdate: '20260901', bloggername: '단골' }),
+    item({ link: 'https://blog.naver.com/s/2', postdate: '20261101', bloggername: '단골' }),
+    item({ link: 'https://blog.naver.com/s/3', postdate: '20261001', bloggername: '처음온손님' })
+  ]);
+  assert.deepEqual(posts.map((p) => p.url), ['https://blog.naver.com/s/2', 'https://blog.naver.com/s/3']);
 });
 
 test('키 이름이 달라도 NAVER ...ID / ...SECRET 짝을 찾아낸다', () => {
@@ -75,7 +94,7 @@ test('세 가지 검색어로 찾아 합치고, 첫 키가 실패하면 다음 �
       return { status: 401, body: JSON.stringify({ errorCode: '024', errorMessage: 'Scope Status Invalid' }) };
     }
     if (opts.path.includes(encodeURIComponent('만기수산 칠곡'))) {
-      return { status: 200, body: JSON.stringify({ items: [item({ link: 'https://blog.naver.com/z/9', postdate: '20261120' })] }) };
+      return { status: 200, body: JSON.stringify({ items: [item({ link: 'https://blog.naver.com/z/9', postdate: '20261120', bloggername: '블로거Z' })] }) };
     }
     return { status: 200, body: JSON.stringify({ items: [item()] }) };
   });

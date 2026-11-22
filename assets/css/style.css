@@ -530,7 +530,7 @@ a { color: inherit; }
   background: var(--wave-line) repeat-x center / 240px 16px;
   pointer-events: none;
 }
-.section--info::before, .section--menu::before { display: none; }
+.section--menu::before { display: none; }
 
 .section__head {
   display: grid;
@@ -599,7 +599,6 @@ a { color: inherit; }
 /* ==========================================================================
    ② 매장 기본 정보
    ========================================================================== */
-.section--info { padding-top: 56px; }
 .info-grid { display: grid; gap: 16px; }
 
 @media (min-width: 760px) {
@@ -1402,27 +1401,161 @@ html.has-dialog { overflow: hidden; }
 .lightbox__nav--next { right: max(8px, env(safe-area-inset-right, 0px)); }
 
 /* ==========================================================================
-   움직임 — 스크롤 등장, 흐르는 물결선, 지도 표시, 불티
-   (모두 '동작 줄이기' 설정에서는 꺼짐)
+   움직임 ① — 스크롤하면 위에서 떨어지기
+   (head 의 스크립트가 html 에 js-reveal 을 붙였을 때만. 동작 줄이기 설정이면 붙지 않음)
    ========================================================================== */
-.js-reveal [data-reveal] {
+.js-reveal :is(.section__head, .card, .location__map, .location__info, .menu-board, .menu-cat,
+  .guide-topic, .guide-note, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head):not(.is-revealed) {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity .7s ease var(--reveal-delay, 0ms), transform .85s cubic-bezier(.2, .7, .2, 1) var(--reveal-delay, 0ms);
 }
-.js-reveal [data-reveal].is-revealed { opacity: 1; transform: none; }
+/* '슥' — 위에서 떨어져 살짝 튕기며 자리 잡음 */
+.js-reveal :is(.section__head, .card, .location__map, .location__info, .menu-cat,
+  .guide-topic, .guide-note, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head).is-revealed {
+  animation: drop-in .62s cubic-bezier(.2, 1.3, .45, 1) var(--reveal-delay, 0ms) backwards;
+}
+@keyframes drop-in {
+  0% { opacity: 0; transform: translateY(-72px); }
+  55% { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
 
-/* 섹션 제목: 먹이 번지듯 또렷해지고, 붉은 붓 밑줄이 왼쪽부터 그어짐 */
-.js-reveal .section__head[data-reveal] .section__title { opacity: .15; filter: blur(8px); transition: opacity 1s ease .1s, filter 1s ease .1s; }
-.js-reveal .section__head[data-reveal].is-revealed .section__title { opacity: 1; filter: none; }
-.js-reveal .section__head[data-reveal] .section__title::after { transform: scaleX(0); transform-origin: left center; transition: transform .9s cubic-bezier(.2, .7, .2, 1) .5s; }
-.js-reveal .section__head[data-reveal].is-revealed .section__title::after { transform: scaleX(1); }
+/* '쿵' — 메뉴판: 높은 곳에서 떨어져 바닥에 부딪히고 찌그러졌다가 두 번 튕김 */
+.js-reveal .menu-board.is-revealed {
+  transform-origin: 50% 100%;
+  animation: thud 1.15s linear var(--reveal-delay, 0ms) backwards;
+}
+@keyframes thud {
+  0% { opacity: 0; transform: translateY(-300px) rotate(-2.5deg); animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
+  8% { opacity: 1; }
+  45% { opacity: 1; transform: translateY(0) rotate(0); animation-timing-function: ease-out; }
+  52% { transform: translateY(5px) scale(1.025, .96); animation-timing-function: ease-out; }
+  66% { transform: translateY(-20px) scale(.995, 1.012); animation-timing-function: ease-in; }
+  78% { transform: translateY(0) scale(1.01, .985); animation-timing-function: ease-out; }
+  88% { transform: translateY(-5px); animation-timing-function: ease-in; }
+  100% { opacity: 1; transform: none; }
+}
+/* 쿵 하는 순간: 메뉴판 영역이 흔들리고, 양옆으로 먼지, 아래로 불티 */
+.section--menu .container.is-quaking { animation: quake .5s cubic-bezier(.36, .07, .19, .97); }
+@keyframes quake {
+  0%, 100% { transform: none; }
+  15% { transform: translateY(6px); }
+  30% { transform: translateY(-5px); }
+  45% { transform: translateY(3px); }
+  60% { transform: translateY(-2px); }
+  78% { transform: translateY(1px); }
+}
+.thud-dust {
+  position: absolute;
+  top: calc(var(--impact-y, 100%) - 36px);
+  width: 66%;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(150, 112, 74, .55), rgba(196, 160, 118, .3) 55%, rgba(196, 160, 118, 0));
+  pointer-events: none;
+  animation: dust-puff .9s ease-out forwards;
+}
+.thud-dust--l { left: -18%; transform-origin: right center; }
+.thud-dust--r { right: -18%; transform-origin: left center; }
+@keyframes dust-puff {
+  0% { opacity: .95; transform: scale(.3, .5); }
+  100% { opacity: 0; transform: scale(1.35, 1.1) translateY(-18px); }
+}
+.thud-spark {
+  position: absolute;
+  top: var(--impact-y, 100%);
+  left: var(--sx);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #FFB45E;
+  box-shadow: 0 0 8px 3px rgba(255, 120, 40, .75);
+  pointer-events: none;
+  animation: spark-burst var(--d) cubic-bezier(.2, .7, .4, 1) forwards;
+}
+@keyframes spark-burst {
+  0% { opacity: 1; transform: translate(0, 0); }
+  100% { opacity: 0; transform: translate(var(--bx), var(--by)) scale(.3); }
+}
+
+/* 섹션 제목: 떨어지면서 먹이 번지듯 또렷해지고, 붉은 붓 밑줄이 왼쪽부터 그어짐 */
+.js-reveal .section__head.is-revealed .section__title { animation: ink-clear 1s ease calc(var(--reveal-delay, 0ms) + .05s) backwards; }
+.js-reveal .section__head.is-revealed .section__title::after {
+  transform-origin: left center;
+  animation: brush-draw .9s cubic-bezier(.2, .7, .2, 1) calc(var(--reveal-delay, 0ms) + .45s) backwards;
+}
+@keyframes ink-clear { from { opacity: .2; filter: blur(8px); } to { opacity: 1; filter: none; } }
+@keyframes brush-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 /* 룸·단체석 인원 막대가 차오름 */
-.js-reveal .card--amenities[data-reveal] .capacity__bar { transform: scaleX(0); transform-origin: left center; transition: transform 1.2s cubic-bezier(.2, .7, .2, 1) .5s; }
-.js-reveal .card--amenities[data-reveal].is-revealed .capacity__bar { transform: scaleX(1); }
+.js-reveal .card--amenities.is-revealed .capacity__bar {
+  transform-origin: left center;
+  animation: bar-fill 1.2s cubic-bezier(.2, .7, .2, 1) calc(var(--reveal-delay, 0ms) + .5s) backwards;
+}
+@keyframes bar-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
-/* 불티 */
+/* ==========================================================================
+   움직임 ② — 버튼에 마우스를 올리면 살짝 떠오르고 아이콘이 반응
+   ========================================================================== */
+.btn, .text-btn, .map-link, .quick-bar__item, .filter-chip, .icon-btn, .hero__place, .hero__scroll,
+.site-nav__call, .site-nav__list a, .guide-topic, .photo-frame, .review-cta {
+  transition: transform .22s cubic-bezier(.3, 1.4, .5, 1), box-shadow .22s ease, background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.btn--primary, .quick-bar__item--call { position: relative; overflow: hidden; }
+.btn--primary::after, .quick-bar__item--call::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -60%;
+  width: 45%;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .38), rgba(255, 255, 255, 0));
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .btn:hover, .map-link:hover, .text-btn:hover, .filter-chip:hover, .hero__place:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(59, 37, 23, .14);
+  }
+  .btn--primary:hover { box-shadow: 0 10px 22px rgba(168, 20, 27, .32); }
+  .btn--primary:hover::after { animation: sheen .7s ease; }            /* 빨간 버튼 위로 빛이 스침 */
+  .site-nav__list a:hover, .site-nav__call:hover, .quick-bar__item:hover { transform: translateY(-2px); }
+  .guide-topic:hover { transform: translateY(-5px) rotate(-1deg); box-shadow: 0 12px 22px rgba(59, 37, 23, .1); }
+  .photo-frame:hover { transform: translateY(-4px) rotate(.4deg); }
+  .review-cta:hover { transform: translateY(-3px) scale(1.01); }
+  .hero__scroll:hover { transform: translateY(2px); }
+  .icon-btn[data-close-dialog]:hover { transform: rotate(90deg); }
+
+  /* 아이콘 반응: 기본은 톡, 전화는 따르릉, 길찾기는 기울기 */
+  .btn:hover .icon, .text-btn:hover .icon, .site-nav__list a:hover .icon { animation: pop .45s ease; }
+  .map-link:hover .map-link__mark, [data-open-directions]:hover .icon { animation: tilt .5s ease; }
+  a[href^="tel:"]:hover .icon { animation: ring .6s ease; }
+}
+
+/* 누르는 순간 꾹 눌리는 느낌 (휴대폰 터치 포함) */
+@media (prefers-reduced-motion: no-preference) {
+  .btn:active, .text-btn:active, .map-link:active, .quick-bar__item:active, .filter-chip:active,
+  .review-cta:active, .guide-topic:active, .site-nav__list a:active {
+    transform: translateY(1px) scale(.97);
+    transition-duration: .08s;
+  }
+}
+@keyframes sheen { from { left: -60%; } to { left: 130%; } }
+@keyframes pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+@keyframes tilt { 0%, 100% { transform: none; } 40% { transform: translate(2px, -2px) rotate(10deg); } }
+@keyframes ring {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(-16deg); }
+  30% { transform: rotate(14deg); }
+  45% { transform: rotate(-10deg); }
+  60% { transform: rotate(8deg); }
+  75% { transform: rotate(-4deg); }
+}
+
+/* ==========================================================================
+   움직임 ③ — 흐르는 물결선, 지도 표시, 불티, 리뷰 버튼
+   ========================================================================== */
 .section--menu .container { position: relative; z-index: 1; }
 .embers { position: absolute; left: 0; right: 0; bottom: 0; height: 75%; overflow: hidden; pointer-events: none; }
 .ember {
@@ -1445,23 +1578,16 @@ html.has-dialog { overflow: hidden; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* 섹션 사이 물결선이 천천히 흐름 */
   .section::before { animation: wave-flow 18s linear infinite; }
-  /* 오늘 영업 카드가 로고 뒤를 이어 떠오름 */
-  .today__card { animation: rise .8s cubic-bezier(.2, .7, .2, 1) .35s both; }
-  /* 상단 문구 양옆 붉은 선이 그어짐 */
+  .today__card { animation: drop-in .7s cubic-bezier(.2, 1.3, .45, 1) .35s both; }
   .hero__eyebrow::before { animation: line-in .7s ease 1.7s both; transform-origin: right center; }
   .hero__eyebrow::after { animation: line-in .7s ease 1.7s both; transform-origin: left center; }
-  /* 지도 표시가 떨어지듯 꽂히고, 매장 표시는 은은하게 맥박 */
   .map-pin { animation: pin-drop .7s cubic-bezier(.3, 1.4, .5, 1) both; }
   .map-pin--parking { animation-delay: .25s; }
   .map-pin--store .map-pin__dot { animation: pin-pulse 2.4s ease-out 1s infinite; }
-  /* 리뷰 버튼의 물결 무늬가 천천히 흔들림 */
   .review-cta::after { animation: drift 7s ease-in-out infinite alternate; }
   .review-cta__arrow { animation: nudge-x 2.4s ease-in-out infinite; }
-  /* 이용 방법 아이콘: 올리면 살짝 흔들림 */
   .guide-topic:hover .guide-topic__icon { animation: wiggle .5s ease; }
-  .site-nav__list a { transition: background-color .2s ease, color .2s ease; }
 }
 @keyframes wave-flow { from { background-position: 0 center; } to { background-position: 240px center; } }
 @keyframes line-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
@@ -1477,6 +1603,34 @@ html.has-dialog { overflow: hidden; }
 @keyframes drift { from { transform: translateX(0); } to { transform: translateX(-48px); } }
 @keyframes nudge-x { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
 @keyframes wiggle { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-10deg); } 65% { transform: rotate(8deg); } }
+
+/* ==========================================================================
+   블로그 후기 — 휴대폰·태블릿은 옆으로 넘기기, PC 는 3열
+   ========================================================================== */
+.blog__hint { display: none; color: var(--c-ink-3); font-size: var(--fs-xs); font-weight: 700; }
+.blog__more { margin-top: 18px; text-align: center; }
+@media (max-width: 1023px) {
+  .blog__hint:not([hidden]) { display: block; }
+  .blog-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: min(84%, 340px);
+    gap: 12px;
+    margin-left: calc(-1 * var(--pad-l));
+    margin-right: calc(-1 * var(--pad-r));
+    padding: 6px var(--pad-r) 14px var(--pad-l);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: var(--pad-l);
+    scrollbar-width: none;
+  }
+  .blog-grid::-webkit-scrollbar { display: none; }
+  .blog-grid > li { scroll-snap-align: start; }
+}
+@media (min-width: 1024px) {
+  .blog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+}
 
 /* ---------- 동작 줄이기 설정 존중 ---------- */
 @media (prefers-reduced-motion: reduce) {

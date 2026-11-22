@@ -12,7 +12,7 @@
  *   renderGallery       매장 사진 + 크게 보기 (site-data.js → gallery)
  *   initMap             네이버 지도 (site-data.js → map, 좌표는 /api/geocode)
  *   initReviews         리뷰 버튼 + 블로그 후기 (/api/blog)
- *   initReveal          스크롤 등장 효과 (제목 먹 번짐·붓 밑줄, 카드 차례로 떠오르기)
+ *   initReveal          스크롤 등장 효과 (위에서 차례로 떨어지기, 메뉴판은 '쿵')
  *   initEmbers          메뉴판 아래 숯불 불티
  *   injectStructuredData 검색엔진용 매장 정보(JSON-LD)
  * ========================================================================== */
@@ -788,11 +788,12 @@
 
     var root = document.querySelector('[data-blog-root]');
     if (!root) return;
-    var count = reviews.blogCount || 4;
+    var count = reviews.blogCount || 9;
     var hidden = (reviews.hiddenPosts || []).map(function (u) { return String(u).replace(/^http:/, 'https:'); });
+    var hint = document.querySelector('.blog__hint');
 
     whenNear(root, function () {
-      setContent(root, blogSkeleton(Math.min(count, 2)));
+      setContent(root, blogSkeleton(3));
       fetch('/api/blog')
         .then(function (res) {
           if (!res.ok) throw new Error('blog ' + res.status);
@@ -806,7 +807,16 @@
             setContent(root, blogFallback('아직 소개할 블로그 후기가 없습니다.'));
             return;
           }
-          setContent(root, h('ul', { className: 'blog-grid' }, posts.map(blogCard)));
+          if (hint) hint.hidden = posts.length < 2; // 휴대폰에서 '옆으로 넘겨 보세요'
+          setContent(root,
+            h('ul', { className: 'blog-grid' }, posts.map(blogCard)),
+            h('p', { className: 'blog__more' }, h('a', {
+              className: 'text-link',
+              href: 'https://search.naver.com/search.naver?where=blog&query=' + encodeURIComponent('만기수산 북삼 후기'),
+              target: '_blank',
+              rel: 'noopener'
+            }, ['네이버에서 후기 더 보기', h('span', { className: 'visually-hidden', text: ' (새 창)' }), icon('external', 'icon--xs')]))
+          );
           observeReveal(root);
         })
         .catch(function () {
@@ -816,63 +826,103 @@
   }
 
   /* ======================================================================
-   * 스크롤 등장 효과
-   * - 화면에 들어올 때 섹션 제목은 먹처럼 번지며 붓 밑줄이 그어지고, 카드는 차례로 떠오릅니다.
-   * - 처음 화면에 이미 보이는 것은 바로 보여 주고(깜빡임 방지), 스크립트가 없으면 그냥 다 보입니다.
+   * 스크롤 등장 효과 — 위에서 떨어지기
+   * - 화면에 함께 들어온 것들은 위에서부터 차례로 '슥슥슥' 떨어집니다.
+   * - 메뉴판은 위에서 '쿵' 떨어지며 섹션이 흔들리고 먼지·불티가 튑니다.
+   * - 숨김은 <head> 의 작은 스크립트가 첫 화면 전에 걸어 둡니다(깜빡임 방지).
+   *   그 스크립트가 숨기지 않은 경우(동작 줄이기·구형 브라우저)에는 아무것도 하지 않습니다.
    * ==================================================================== */
   var REVEAL_SELECTOR = '.section__head, .card, .location__map, .location__info, .menu-board, .menu-cat, ' +
-    '.guide-topic, .guide-note, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head, .site-footer__inner';
+    '.guide-topic, .guide-note, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head';
+  var THUD_IMPACT_MS = 520; // 메뉴판이 바닥에 닿는 순간 (style.css 의 thud 와 맞춤)
+  var STEP_MS = 110;        // '슥슥슥' 간격
   var revealObserver = null;
-
-  function prepareReveal(nodes) {
-    // 위치를 먼저 모두 읽은 뒤 표시를 바꿔야 이미 보이는 요소가 깜빡이지 않음
-    var viewH = window.innerHeight || document.documentElement.clientHeight;
-    var inView = nodes.map(function (el) {
-      var r = el.getBoundingClientRect();
-      return r.top < viewH * 0.95 && r.bottom > 0;
-    });
-    nodes.forEach(function (el, i) {
-      var item = el.closest('li') || el;
-      var index = Array.prototype.indexOf.call(item.parentNode.children, item);
-      el.style.setProperty('--reveal-delay', Math.min(Math.max(index, 0), 6) * 80 + 'ms');
-      el.setAttribute('data-reveal', '');
-      if (inView[i]) el.classList.add('is-revealed');
-      else revealObserver.observe(el);
-    });
-  }
+  var thudLandsAt = 0;
 
   function observeReveal(scope) {
     if (!revealObserver || !scope) return;
-    var nodes = Array.prototype.filter.call(scope.querySelectorAll(REVEAL_SELECTOR), function (el) {
-      return !el.hasAttribute('data-reveal');
+    Array.prototype.forEach.call(scope.querySelectorAll(REVEAL_SELECTOR), function (el) {
+      if (el.hasAttribute('data-reveal-watch')) return;
+      el.setAttribute('data-reveal-watch', '');
+      revealObserver.observe(el);
     });
-    if (nodes.length) prepareReveal(nodes);
   }
 
-  function finishReveal(el) {
-    // 마우스를 올렸을 때의 움직임과 겹치지 않도록, 다 나타난 블로그 카드는 원래 상태로 되돌림
-    if (!el.classList.contains('blog-card')) return;
-    var done = function () {
-      el.removeAttribute('data-reveal');
-      el.classList.remove('is-revealed');
-    };
-    el.addEventListener('transitionend', function (event) { if (event.propertyName === 'transform') done(); }, { once: true });
-    setTimeout(done, 1800);
+  function thudImpact(board) {
+    // 메뉴판이 화면보다 길면(휴대폰) 바닥이 안 보이므로, 보이는 부분의 아래쪽에서 먼지·불티가 일어나게 함
+    // 위치는 움직이는 중인 상자가 아니라 원래 자리(레이아웃) 기준으로 계산
+    var top = 0;
+    for (var node = board; node; node = node.offsetParent) top += node.offsetTop;
+    var bar = document.querySelector('[data-quick-bar]');
+    var barH = bar && !bar.classList.contains('is-hidden') && getComputedStyle(bar).display !== 'none' ? bar.offsetHeight : 0;
+    var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    var visibleBottom = scrollY + (window.innerHeight || document.documentElement.clientHeight) - barH - 20 - top;
+    board.style.setProperty('--impact-y', Math.max(60, Math.min(board.offsetHeight, visibleBottom)) + 'px');
+
+    var container = board.closest('.container');
+    if (container) {
+      container.classList.remove('is-quaking');
+      void container.offsetWidth; // 다시 흔들 수 있도록 초기화
+      container.classList.add('is-quaking');
+      setTimeout(function () { container.classList.remove('is-quaking'); }, 600);
+    }
+    var bits = [];
+    ['l', 'r'].forEach(function (side) {
+      bits.push(h('span', { className: 'thud-dust thud-dust--' + side, 'aria-hidden': 'true' }));
+    });
+    for (var i = 0; i < 16; i++) {
+      var spark = h('span', { className: 'thud-spark', 'aria-hidden': 'true' });
+      spark.style.setProperty('--sx', (6 + Math.random() * 88).toFixed(1) + '%');
+      spark.style.setProperty('--bx', Math.round((Math.random() - 0.5) * 180) + 'px');
+      spark.style.setProperty('--by', Math.round(-30 - Math.random() * 110) + 'px');
+      spark.style.setProperty('--d', (0.55 + Math.random() * 0.55).toFixed(2) + 's');
+      bits.push(spark);
+    }
+    bits.forEach(function (bit) { board.appendChild(bit); });
+    setTimeout(function () {
+      bits.forEach(function (bit) { if (bit.parentNode) bit.parentNode.removeChild(bit); });
+    }, 1400);
+  }
+
+  function revealBatch(entries) {
+    var now = Date.now();
+    var batch = entries
+      .filter(function (entry) { return entry.isIntersecting; })
+      .map(function (entry) { return entry.target; })
+      .sort(function (a, b) { return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1; });
+
+    var step = 0;
+    var catStep = 0;
+    batch.forEach(function (el) {
+      revealObserver.unobserve(el);
+      var delay;
+      if (el.classList.contains('menu-board')) {
+        delay = 0;
+        thudLandsAt = now + THUD_IMPACT_MS;
+        // 애니메이션이 실제로 시작된 순간부터 재야 '쿵'과 흔들림이 정확히 맞음
+        el.addEventListener('animationstart', function onStart(event) {
+          if (event.animationName !== 'thud') return;
+          el.removeEventListener('animationstart', onStart);
+          setTimeout(function () { thudImpact(el); }, THUD_IMPACT_MS);
+        });
+      } else if (el.classList.contains('menu-cat')) {
+        // 메뉴판이 '쿵' 하고 닿은 뒤에 메뉴 분류가 차례로 내려앉음
+        delay = Math.max(0, thudLandsAt + 140 - now) + catStep * 90;
+        catStep++;
+      } else {
+        delay = Math.min(step, 7) * STEP_MS;
+        step++;
+      }
+      el.style.setProperty('--reveal-delay', delay + 'ms');
+      el.classList.add('is-revealed');
+    });
   }
 
   function initReveal() {
-    if (reducedMotion || !('IntersectionObserver' in window)) return;
-    revealObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-revealed');
-        revealObserver.unobserve(entry.target);
-        finishReveal(entry.target);
-      });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
-    var nodes = Array.prototype.slice.call(document.querySelectorAll(REVEAL_SELECTOR));
-    document.documentElement.classList.add('js-reveal');
-    prepareReveal(nodes);
+    if (!document.documentElement.classList.contains('js-reveal')) return;
+    revealObserver = new IntersectionObserver(revealBatch, { rootMargin: '0px 0px -6% 0px', threshold: 0.08 });
+    window.__revealReady = true;
+    observeReveal(document);
   }
 
   /* ======================================================================

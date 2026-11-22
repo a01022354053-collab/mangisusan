@@ -82,7 +82,7 @@ specialDays: [
 ### 리뷰·블로그 — `site-data.js` 의 `reviews`
 - `reviewUrl`: '리뷰' 버튼을 누르면 이동하는 주소
 - `hiddenPosts`: 관련 없는 블로그 글 주소를 넣으면 숨겨집니다.
-- `blogCount`: 보여 줄 블로그 글 개수 (기본 4)
+- `blogCount`: 보여 줄 블로그 후기 개수 (기본 9, 같은 블로거는 1개씩)
 
 ### 지도 — `site-data.js` 의 `map`
 매장과 인평체육공원 주차장 주소로 좌표를 찾아 표시합니다. 주소를 바꾸면 지도 표시도 바뀝니다.
