@@ -4,7 +4,7 @@
  * 구성 (각 기능은 따로 실행되며, 하나가 실패해도 나머지는 동작합니다)
  *   initBusinessStatus  오늘 날짜 · 현재 영업 상태 · 오늘 요일 강조 · 예외 일정 공지
  *   initNavigation      섹션 바로가기 현재 위치 표시
- *   initQuickBar        모바일 하단 버튼 (첫 화면 버튼이 보이는 동안 숨김)
+ *   initCallFab         떠 있는 전화 버튼 (첫 화면 전화 버튼이 보이는 동안 숨김)
  *   initDialogs         길찾기 선택 창 · 닫기
  *   initCopyButtons     주소·전화번호 복사
  *   renderMenu          메뉴판 (site-data.js → menu)
@@ -218,12 +218,18 @@
    * 섹션 바로가기 — 현재 보고 있는 섹션 표시
    * ==================================================================== */
   function initNavigation() {
-    var list = document.querySelector('[data-nav-list]');
-    if (!list || !('IntersectionObserver' in window)) return;
-    var links = Array.prototype.slice.call(list.querySelectorAll('a[href^="#"]'));
-    var sections = links
-      .map(function (link) { return document.querySelector(link.getAttribute('href')); })
-      .filter(Boolean);
+    // PC 위쪽 바로가기와 휴대폰 하단 탭바 모두에 현재 위치 표시
+    var lists = Array.prototype.slice.call(document.querySelectorAll('[data-nav-list]'));
+    if (!lists.length || !('IntersectionObserver' in window)) return;
+    var links = [];
+    lists.forEach(function (list) {
+      Array.prototype.forEach.call(list.querySelectorAll('a[href^="#"]'), function (link) { links.push(link); });
+    });
+    var sections = [];
+    links.forEach(function (link) {
+      var section = document.querySelector(link.getAttribute('href'));
+      if (section && sections.indexOf(section) === -1) sections.push(section);
+    });
     var current = null;
 
     function setActive(id) {
@@ -232,8 +238,11 @@
       links.forEach(function (link) {
         if (link.getAttribute('href') === '#' + id) {
           link.setAttribute('aria-current', 'true');
-          var left = link.offsetLeft - (list.clientWidth - link.offsetWidth) / 2;
-          list.scrollTo({ left: Math.max(0, left), behavior: reducedMotion ? 'auto' : 'smooth' });
+          var list = link.closest('[data-nav-list]');
+          if (list && list.scrollWidth > list.clientWidth + 2) { // 가로로 넘치는 목록이면 현재 항목이 보이게
+            var left = link.offsetLeft - (list.clientWidth - link.offsetWidth) / 2;
+            list.scrollTo({ left: Math.max(0, left), behavior: reducedMotion ? 'auto' : 'smooth' });
+          }
         } else {
           link.removeAttribute('aria-current');
         }
@@ -254,14 +263,14 @@
   }
 
   /* ======================================================================
-   * 모바일 하단 고정 버튼 — 첫 화면의 전화·길찾기 버튼이 보이는 동안 숨김
+   * 떠 있는 전화 버튼 — 첫 화면의 전화 버튼이 보이는 동안은 숨김 (같은 버튼이 두 개 보이지 않게)
    * ==================================================================== */
-  function initQuickBar() {
-    var bar = document.querySelector('[data-quick-bar]');
+  function initCallFab() {
+    var fab = document.querySelector('[data-call-fab]');
     var heroActions = document.getElementById('hero-actions');
-    if (!bar || !heroActions || !('IntersectionObserver' in window)) return;
+    if (!fab || !heroActions || !('IntersectionObserver' in window)) return;
     new IntersectionObserver(function (entries) {
-      bar.classList.toggle('is-hidden', entries[0].isIntersecting);
+      fab.classList.toggle('is-hidden', entries[0].isIntersecting);
     }).observe(heroActions);
   }
 
@@ -941,8 +950,8 @@
     // 위치는 움직이는 중인 상자가 아니라 원래 자리(레이아웃) 기준으로 계산
     var top = 0;
     for (var node = board; node; node = node.offsetParent) top += node.offsetTop;
-    var bar = document.querySelector('[data-quick-bar]');
-    var barH = bar && !bar.classList.contains('is-hidden') && getComputedStyle(bar).display !== 'none' ? bar.offsetHeight : 0;
+    var bar = document.querySelector('[data-tabbar]');
+    var barH = bar ? bar.offsetHeight : 0; // PC 에서는 숨겨져 0
     var scrollY = window.pageYOffset || document.documentElement.scrollTop;
     var visibleBottom = scrollY + (window.innerHeight || document.documentElement.clientHeight) - barH - 20 - top;
     board.style.setProperty('--impact-y', Math.max(60, Math.min(board.offsetHeight, visibleBottom)) + 'px');
@@ -1076,7 +1085,7 @@
   function start() {
     safely('영업 상태', initBusinessStatus);
     safely('바로가기', initNavigation);
-    safely('하단 버튼', initQuickBar);
+    safely('전화 버튼', initCallFab);
     safely('대화상자', initDialogs);
     safely('복사 버튼', initCopyButtons);
     safely('메뉴', renderMenu);

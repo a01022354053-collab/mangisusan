@@ -566,18 +566,22 @@
   </div>
 </footer>
 
-<!-- ===== 모바일 하단 고정 버튼 ===== -->
-<nav class="quick-bar" aria-label="빠른 메뉴" data-quick-bar>
-  <a class="quick-bar__item quick-bar__item--call" href="tel:054-976-8892">
-    <svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg><span>전화하기</span>
-  </a>
-  <a class="quick-bar__item" href="#location" data-open-directions>
-    <svg class="icon" aria-hidden="true"><use href="#i-navigation"/></svg><span>길찾기</span>
-  </a>
-  <a class="quick-bar__item" href="#menu">
-    <svg class="icon" aria-hidden="true"><use href="#i-book"/></svg><span>메뉴판</span>
-  </a>
+<!-- ===== 휴대폰·태블릿 하단 탭바 (PC 는 위쪽 바로가기 사용) ===== -->
+<nav class="tabbar" aria-label="하단 메뉴" data-tabbar>
+  <ul class="tabbar__list" data-nav-list>
+    <li><a class="tabbar__item" href="#menu"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg><span>메뉴판</span></a></li>
+    <li><a class="tabbar__item" href="#info"><svg class="icon" aria-hidden="true"><use href="#i-store"/></svg><span>매장정보</span></a></li>
+    <li><a class="tabbar__item" href="#location"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span>오시는 길</span></a></li>
+    <li><a class="tabbar__item" href="#guide"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span>이용방법</span></a></li>
+    <li><a class="tabbar__item" href="#reviews"><svg class="icon" aria-hidden="true"><use href="#i-message"/></svg><span>리뷰</span></a></li>
+  </ul>
 </nav>
+
+<!-- 떠 있는 전화 버튼 (첫 화면의 전화 버튼이 보이는 동안은 숨김) -->
+<a class="call-fab" href="tel:054-976-8892" data-call-fab aria-label="전화 걸기 054-976-8892">
+  <svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>
+  <span class="call-fab__label" aria-hidden="true">전화</span>
+</a>
 
 <!-- ===== 길찾기 선택 창 ===== -->
 <dialog class="sheet" id="directions-dialog" aria-labelledby="directions-title">
