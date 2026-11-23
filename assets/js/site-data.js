@@ -33,7 +33,7 @@ window.SITE_DATA = {
    *      soldOut: false
    *    }
    *    분류의 deco: 분류 제목 옆 움직이는 장식 (assets/js/menu-art.js)
-   *      'pot' 김 나는 뚝배기 · 'drinker' 술 마시는 장어 · 'fizz' 기포 오르는 잔 · 'bag' 포장 봉투
+   *      'pot' 김 나는 뚝배기 · 'fizz' 기포 오르는 잔 · 'bag' 포장 봉투
    *    분류의 strip: true → 대표 가격 아래 한 줄로 (상차림비)
    * ---------------------------------------------------------------------- */
   menu: {
@@ -82,7 +82,6 @@ window.SITE_DATA = {
       {
         id: 'liquor',
         label: '주류',
-        deco: 'drinker',
         note: null,
         items: [
           { name: '소주', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },

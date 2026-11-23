@@ -2243,7 +2243,6 @@ html.has-dialog { overflow: hidden; }
 .menu-cat__deco--pot { width: 64px; margin-block: -26px -6px; }
 .menu-cat__deco--bag { width: 40px; margin-block: -18px -4px; }
 .menu-cat__deco--fizz { width: 40px; margin-block: -22px -4px; }
-.menu-cat__deco--drinker { width: 150px; margin-block: -46px -8px; }
 .menu-cat__title + .menu-list,
 .menu-cat__title + .menu-cat__note { margin-top: 6px; }
 .menu-row__tag { margin: 0 6px 0 0; vertical-align: 3px; }
@@ -2285,18 +2284,17 @@ html.has-dialog { overflow: hidden; }
    ========================================================================== */
 .art { display: block; overflow: visible; }
 .art * { transform-box: fill-box; }
-.art-kya { font-family: var(--font-brush, sans-serif); fill: var(--c-red, #a8141b); opacity: 0; }
 
-.menu-board :is(.art-smoke__p, .art-ember, .art-coal-halo, .art-shine, .art-spark, .art-piece, .art-steam__p,
-  .art-head, .art-glass, .art-glass__soju, .art-blush, .art-kya, .art-tail, .art-bubble, .art-foam, .art-bag) {
+.menu-board :is(.art-smoke__p, .art-ember, .art-coal-halo, .art-spark, .art-steam__p,
+  .art-bubble, .art-foam, .art-bag) {
   animation-play-state: paused;
 }
-.menu-board.is-live :is(.art-smoke__p, .art-ember, .art-coal-halo, .art-shine, .art-spark, .art-piece, .art-steam__p,
-  .art-head, .art-glass, .art-glass__soju, .art-blush, .art-kya, .art-tail, .art-bubble, .art-foam, .art-bag) {
+.menu-board.is-live :is(.art-smoke__p, .art-ember, .art-coal-halo, .art-spark, .art-steam__p,
+  .art-bubble, .art-foam, .art-bag) {
   animation-play-state: running;
 }
 
-/* 숯불 석쇠: 숯이 숨 쉬듯 빛나고, 장어가 지글거리며 연기와 불티가 오름 */
+/* 숯불 석쇠: 숯이 숨 쉬듯 빛나고, 연기와 불티가 오름 */
 .art-smoke__p { opacity: 0; transform-origin: 50% 100%; animation: art-rise 3.2s ease-out infinite; }
 .art-smoke__p--2 { animation-delay: 1.05s; }
 .art-smoke__p--3 { animation-delay: 2.1s; }
@@ -2311,11 +2309,6 @@ html.has-dialog { overflow: hidden; }
 .art-ember--2 { animation-delay: -.6s; } .art-ember--3 { animation-delay: -1.2s; } .art-ember--4 { animation-delay: -.3s; }
 .art-ember--5 { animation-delay: -.9s; } .art-ember--6 { animation-delay: -1.5s; }
 @keyframes art-ember { from { opacity: .35; } to { opacity: 1; } }
-.art-piece { transform-origin: 50% 100%; animation: art-sizzle 1.6s ease-in-out infinite; }
-.art-piece--2 { animation-delay: -.5s; } .art-piece--3 { animation-delay: -1s; }
-@keyframes art-sizzle { 0%, 100% { transform: none; } 50% { transform: translateY(-1px) scaleY(1.04); } }
-.art-shine { opacity: .15; animation: art-shine 2.4s ease-in-out infinite; }
-@keyframes art-shine { 0%, 100% { opacity: .12; } 50% { opacity: .6; } }
 .art-spark { opacity: 0; animation: art-spark 2.2s ease-out infinite; }
 .art-spark--2 { animation-delay: .7s; } .art-spark--3 { animation-delay: 1.3s; } .art-spark--4 { animation-delay: 1.8s; }
 @keyframes art-spark {
@@ -2328,34 +2321,6 @@ html.has-dialog { overflow: hidden; }
 .art-steam__p { opacity: 0; transform-origin: 50% 100%; animation: art-rise 2.8s ease-out infinite; }
 .art-steam__p--2 { animation-delay: .9s; }
 .art-steam__p--3 { animation-delay: 1.8s; }
-
-/* 술 마시는 장어: 잔을 들어 한 모금 → 고개 들고 '캬~' → 볼이 빨개짐 (5초마다) */
-.art-head { transform-origin: 20% 95%; animation: art-head 5s ease-in-out infinite; }
-@keyframes art-head {
-  0%, 18% { transform: none; }
-  30%, 46% { transform: rotate(14deg) translate(2px, 3px); }
-  58% { transform: rotate(-8deg); }
-  70%, 100% { transform: none; }
-}
-.art-glass { transform-origin: 0% 100%; animation: art-glass 5s ease-in-out infinite; }
-@keyframes art-glass {
-  0%, 18% { transform: none; }
-  30%, 46% { transform: translate(-12px, -26px) rotate(-38deg); }
-  58%, 100% { transform: none; }
-}
-.art-glass__soju { transform-origin: 50% 100%; animation: art-soju 5s ease-in-out infinite; }
-@keyframes art-soju { 0%, 30% { transform: none; } 46%, 92% { transform: scaleY(.35); } 100% { transform: none; } }
-.art-blush { opacity: .35; transform-origin: 50% 50%; animation: art-blush 5s ease-in-out infinite; }
-@keyframes art-blush { 0%, 50% { opacity: .3; transform: none; } 62%, 88% { opacity: .95; transform: scale(1.25); } 100% { opacity: .3; } }
-.art-kya { transform-origin: 0 100%; animation: art-kya 5s ease-out infinite; }
-@keyframes art-kya {
-  0%, 54% { opacity: 0; transform: translateY(6px) scale(.8); }
-  62% { opacity: 1; transform: none; }
-  82% { opacity: 1; transform: translateY(-4px); }
-  92%, 100% { opacity: 0; transform: translateY(-8px); }
-}
-.art-tail { transform-origin: 100% 50%; animation: art-tail 2.4s ease-in-out infinite; }
-@keyframes art-tail { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-3deg) translateY(-1px); } }
 
 /* 음료: 기포가 보글보글 */
 .art-bubble { animation: art-bubble 2s ease-in infinite; }
@@ -2511,6 +2476,48 @@ button.photo-viewer__slide { cursor: zoom-in; }
   .photo-viewer__stage { aspect-ratio: 16 / 11; }
   .photo-viewer__nav { width: 36px; height: 36px; margin-top: -18px; }
   .photo-viewer__empty-label { font-size: 2rem; }
+}
+
+/* ==========================================================================
+   휴대폰 메뉴판 — 한눈에 보이도록 촘촘한 2열 (이름 위, 가격 아래)
+   ========================================================================== */
+@media (max-width: 759px) {
+  .menu-board { padding: 18px 12px 14px; }
+  .menu-board::before { inset: 6px; }
+  .menu-board__head { flex-direction: row; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .menu-board__seal { width: 30px; }
+  .menu-board__title { font-size: 1.6rem; }
+
+  /* 대표 가격 띠: 숯불 그림 옆에 가격 */
+  .menu-hero { grid-template-columns: 104px minmax(0, 1fr); align-items: center; gap: 10px; margin-bottom: 18px; padding: 8px 12px 8px 8px; }
+  .menu-hero__art { width: 100%; margin: 0; }
+  .menu-hero__text { justify-items: start; text-align: left; gap: 0; }
+  .menu-hero__name { font-size: 1.55rem; }
+  .menu-hero__price { justify-content: flex-start; gap: 2px 6px; }
+  .menu-hero__unit { font-size: var(--fs-md); }
+  .menu-hero__amount { font-size: 2rem; }
+  .menu-strip { margin: -10px auto 12px; padding: 4px 8px 8px; }
+  .menu-strip__item { font-size: var(--fs-sm); }
+
+  .menu-cats { gap: 12px; }
+  .menu-cat__title { gap: 6px; font-size: 1.45rem; }
+  .menu-cat__deco--pot { width: 40px; margin-block: -14px -4px; }
+  .menu-cat__deco--bag, .menu-cat__deco--fizz { width: 26px; margin-block: -10px -2px; }
+  .menu-cat__title + .menu-list { margin-top: 2px; }
+
+  .menu-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 14px; }
+  .menu-row { padding-block: 6px; }
+  .menu-row:nth-last-child(2):nth-child(odd) { border-bottom: 0; }
+  .menu-row__line { flex-wrap: wrap; gap: 0 6px; }
+  .menu-row__name { flex-basis: 100%; font-size: var(--fs-sm); line-height: 1.35; word-break: keep-all; }
+  .menu-row__dots { display: none; }
+  .menu-row__price { font-size: var(--fs-md); }
+  .menu-row__desc { margin-top: 0; font-size: .6875rem; line-height: 1.3; }
+  .menu-row__tag { padding: 0 5px; font-size: .625rem; vertical-align: 1px; margin-right: 4px; }
+  .menu-options { gap: 0; margin-top: 2px; padding-left: 0; }
+  .menu-options .menu-row__line { flex-wrap: nowrap; justify-content: space-between; font-size: var(--fs-xs); }
+  .menu-options .menu-row__price { font-size: var(--fs-sm); }
+  .menu-updated { margin-top: 8px; font-size: var(--fs-xs); }
 }
 
 /* ---------- 동작 줄이기 설정 존중 ---------- */

@@ -1,8 +1,7 @@
 /* ==========================================================================
  * 메뉴판 움직이는 장식 (SVG) — 움직임은 style.css 의 '메뉴판 움직이는 장식'
- *   grill   : 숯불 위 석쇠에서 지글지글 굽히는 장어 (대표 가격 띠)
+ *   grill   : 숯불 위 석쇠 — 숯이 빛나고 연기·불티가 오름 (대표 가격 띠)
  *   pot     : 김이 오르는 뚝배기 (식사)
- *   drinker : 소주 한 잔 마시는 장어 (주류)
  *   fizz    : 기포가 오르는 잔 (음료)
  *   bag     : 살랑이는 포장 봉투 (포장)
  * 화면에 보일 때만 움직이고, '동작 줄이기' 설정이면 멈춰 있습니다.
@@ -12,8 +11,7 @@ window.MENU_ART = {
     '<svg class="art art--grill" viewBox="0 0 240 150" aria-hidden="true" focusable="false">' +
       '<defs>' +
         '<radialGradient id="art-coal-glow" cx="50%" cy="55%" r="60%"><stop offset="0" stop-color="#ff8a2b" stop-opacity=".9"/><stop offset=".55" stop-color="#e2541c" stop-opacity=".45"/><stop offset="1" stop-color="#e2541c" stop-opacity="0"/></radialGradient>' +
-        '<linearGradient id="art-eel-meat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d2793a"/><stop offset=".5" stop-color="#a84a18"/><stop offset="1" stop-color="#6e2709"/></linearGradient>' +
-      '</defs>' +
+        '</defs>' +
       // 연기
       '<g class="art-smoke" fill="none" stroke="#8a7c70" stroke-width="2.4" stroke-linecap="round">' +
         '<path class="art-smoke__p art-smoke__p--1" d="M78 62 c-7 -7 6 -12 0 -20 c-6 -8 7 -12 1 -20"/>' +
@@ -38,12 +36,6 @@ window.MENU_ART = {
         '<path d="M62 78 l-12 26 M82 78 l-8 26 M102 78 l-4 26 M122 78 l0 26 M142 78 l4 26 M162 78 l8 26 M182 78 l12 26" stroke-width="1.3" opacity=".8"/>' +
         '<path d="M33 91 h174" stroke-width="1.3" opacity=".8"/>' +
       '</g>' +
-      // 장어 토막 (석쇠 위에 납작하게 놓인 구이)
-      '<g class="art-eel-pieces">' +
-        '<g class="art-piece art-piece--1" transform="rotate(-3 75 89)"><path d="M50 87 q1 -5 7 -5 h36 q6 0 7 5 l1 6 q0 4 -6 4 h-38 q-6 0 -8 -4 z" fill="url(#art-eel-meat)" stroke="#4a1a06" stroke-width="1.2"/><path d="M52 96 h44" stroke="#3a1405" stroke-width="2.2" stroke-linecap="round" opacity=".7"/><path d="M59 84 l-4 9" stroke="#2a0f04" stroke-width="2.2" opacity=".5" stroke-linecap="round"/><path d="M69 84 l-4 9" stroke="#2a0f04" stroke-width="2.2" opacity=".5" stroke-linecap="round"/><path d="M79 84 l-4 9" stroke="#2a0f04" stroke-width="2.2" opacity=".5" stroke-linecap="round"/><path d="M89 84 l-4 9" stroke="#2a0f04" stroke-width="2.2" opacity=".5" stroke-linecap="round"/><path class="art-shine" d="M56 85 q18 -3 34 -1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none"/></g>' +
-        '<g class="art-piece art-piece--2" transform="rotate(1 129 88)"><path d="M104 86 q1 -5 7 -5 h36 q6 0 7 5 l1 6 q0 4 -6 4 h-38 q-6 0 -8 -4 z" fill="url(#art-eel-meat)" stroke="#4a1a06" stroke-width="1.2"/><path d="M106 95 h44" stroke="#3a1405" stroke-width="2.2" stroke-linecap="round" opacity=".7"/><path d="M113 83 l-4 9" stroke="#2a0f04" stroke-width="2.2" opacity=".5" stroke-linecap="round"/><path d="M123 83 l-4 9" stroke="#2a0f04" stroke-width="2.2" opacity=".5" stroke-linecap="round"/><path d="M133 83 l-4 9" stroke="#2a0f04" stroke-width="2.2" opacity=".5" stroke-linecap="round"/><path d="M143 83 l-4 9" stroke="#2a0f04" stroke-width="2.2" opacity=".5" stroke-linecap="round"/><path class="art-shine" d="M110 84 q18 -3 34 -1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none"/></g>' +
-        '<g class="art-piece art-piece--3" transform="rotate(4 181 90)"><path d="M158 88 q1 -5 7 -5 h32 q6 0 7 5 l1 6 q0 4 -6 4 h-34 q-6 0 -8 -4 z" fill="url(#art-eel-meat)" stroke="#4a1a06" stroke-width="1.2"/><path d="M160 97 h40" stroke="#3a1405" stroke-width="2.2" stroke-linecap="round" opacity=".7"/><path d="M167 85 l-4 9" stroke="#2a0f04" stroke-width="2.2" opacity=".5" stroke-linecap="round"/><path d="M177 85 l-4 9" stroke="#2a0f04" stroke-width="2.2" opacity=".5" stroke-linecap="round"/><path d="M187 85 l-4 9" stroke="#2a0f04" stroke-width="2.2" opacity=".5" stroke-linecap="round"/><path class="art-shine" d="M164 86 q16 -3 30 -1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none"/></g>' +
-      '</g>' +
       // 튀는 불티
       '<g fill="#ffb347">' +
         '<circle class="art-spark art-spark--1" cx="44" cy="108" r="1.8"/><circle class="art-spark art-spark--2" cx="96" cy="106" r="1.6"/>' +
@@ -65,41 +57,6 @@ window.MENU_ART = {
       '<ellipse class="art-broth" cx="48" cy="46" rx="32" ry="5.5" fill="#a4471c"/>' +
       '<circle cx="38" cy="45" r="1.6" fill="#7da34a"/><circle cx="52" cy="47" r="1.4" fill="#7da34a"/><circle cx="60" cy="44.5" r="1.5" fill="#7da34a"/><circle cx="45" cy="44" r="1.2" fill="#e9c27a"/>' +
       '<ellipse cx="48" cy="80" rx="30" ry="3" fill="#1b1714" opacity=".15"/>' +
-    '</svg>',
-
-  drinker:
-    '<svg class="art art--drinker" viewBox="0 0 190 120" aria-hidden="true" focusable="false">' +
-      // 소주병 (초록 유리)
-      '<g class="art-bottle">' +
-        '<rect x="22" y="40" width="9" height="10" rx="1.5" fill="#2f6a46"/>' +
-        '<path d="M23 50 v8 c0 5 -9 7 -9 16 v32 c0 3 2 5 5 5 h15 c3 0 5 -2 5 -5 v-32 c0 -9 -9 -11 -9 -16 v-8 z" fill="#5f9d74" stroke="#2f6a46" stroke-width="1.6"/>' +
-        '<rect x="14" y="80" width="25" height="16" fill="#f6efe3"/><rect x="14" y="80" width="25" height="3" fill="#a8141b"/>' +
-        '<path d="M18 62 c-1 10 -1 30 0 44" stroke="#fff" stroke-opacity=".55" stroke-width="2" stroke-linecap="round" fill="none"/>' +
-      '</g>' +
-      '<path d="M4 112 h182" stroke="#4b301e" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>' +
-      // 몸통 (꼬리 → 목): 밝은 배 + 어두운 등 + 붉은 등지느러미
-      '<g class="art-body">' +
-        '<path class="art-tail" d="M52 106 C62 94 74 114 88 106 C100 99 106 108 118 106 C128 104 132 98 134 88" fill="none" stroke="#b89c7a" stroke-width="15" stroke-linecap="round"/>' +
-        '<path class="art-tail" d="M52 103 C62 91 74 111 88 103 C100 96 106 105 118 103 C128 101 132 95 134 85" fill="none" stroke="#3a302a" stroke-width="12" stroke-linecap="round"/>' +
-        '<path class="art-tail" d="M56 95 C66 84 76 103 90 95 C102 88 108 97 120 95" fill="none" stroke="#a8141b" stroke-width="2.2" stroke-linecap="round" opacity=".75"/>' +
-      '</g>' +
-      // 머리 (술잔 쪽으로 고개를 숙였다 듦)
-      '<g class="art-head">' +
-        '<path d="M128 92 C126 78 128 66 138 58" fill="none" stroke="#b89c7a" stroke-width="15" stroke-linecap="round"/>' +
-        '<path d="M127 90 C125 76 127 64 137 56" fill="none" stroke="#3a302a" stroke-width="12" stroke-linecap="round"/>' +
-        '<path d="M134 46 C146 38 166 40 174 50 C176 54 172 58 166 59 C154 61 142 60 136 58 C130 56 129 50 134 46 Z" fill="#3a302a"/>' +
-        '<path d="M140 58 C150 61 162 61 170 57" fill="none" stroke="#b89c7a" stroke-width="3" stroke-linecap="round"/>' +
-        '<path d="M166 54 q4 1 7 -2" fill="none" stroke="#f6efe3" stroke-width="1.6" stroke-linecap="round"/>' +
-        '<circle cx="152" cy="47" r="4.6" fill="#f6efe3"/><circle class="art-eye" cx="153.4" cy="47.4" r="2.4" fill="#1b1714"/>' +
-        '<ellipse class="art-blush" cx="158" cy="54" rx="4.2" ry="2.4" fill="#f07a7a"/>' +
-        '<path d="M136 62 q-8 2 -10 8 q6 -1 10 -4" fill="#3a302a"/>' +
-      '</g>' +
-      // 소주잔
-      '<g class="art-glass">' +
-        '<path d="M166 86 l3 20 h14 l3 -20 z" fill="#fff" fill-opacity=".75" stroke="#3a302a" stroke-width="1.6" stroke-linejoin="round"/>' +
-        '<path class="art-glass__soju" d="M167.4 94 l1.6 12 h14 l1.6 -12 z" fill="#cfe6ef"/>' +
-      '</g>' +
-      '<text class="art-kya" x="140" y="26" font-size="22">캬~</text>' +
     '</svg>',
 
   fizz:
