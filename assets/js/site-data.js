@@ -32,6 +32,7 @@ window.SITE_DATA = {
    *      badge: '할인 세트', // 이름 옆 작은 표시 (선택)
    *      soldOut: false
    *    }
+   *    분류의 icon: 분류 이름 옆 작은 그림 — 'bowl'(식사) 'soju'(주류) 'cup'(음료) 'pouch'(장어즙 등)
    * ---------------------------------------------------------------------- */
   menu: {
     lastUpdated: '2026-11-22', // 가격 기준일 (장어 가격·포스터 가격 확인일)
@@ -44,13 +45,22 @@ window.SITE_DATA = {
           { name: '민물장어', description: null, priceType: 'weight', highlight: true, options: [{ label: '100g당', amount: 9500 }] }
         ]
       },
-      { id: 'meal', label: '식사류', note: null, items: [] },
+      { id: 'meal', label: '식사류', icon: 'bowl', note: null, items: [] },
       {
-        id: 'drink',
-        label: '주류·음료',
-        note: '아래 외 주류·음료 가격은 확인 중입니다.',
+        id: 'liquor',
+        label: '주류',
+        icon: 'soju',
+        note: '아래 외 주류 가격은 확인 중입니다.',
         items: [
-          { name: '벌떡주', description: '15가지 한약재를 달여 만든 술 · 375ml · 13%', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
+          { name: '벌떡주', description: '15가지 한약재를 달여 만든 술 · 375ml · 13%', priceType: 'fixed', options: [{ label: null, amount: 15000 }] }
+        ]
+      },
+      {
+        id: 'beverage',
+        label: '음료',
+        icon: 'cup',
+        note: '아래 외 음료 가격은 확인 중입니다.',
+        items: [
           { name: '카스 제로 (무알코올 맥주)', priceType: 'fixed', options: [{ label: null, amount: 4000 }] }
         ]
       },
@@ -58,6 +68,7 @@ window.SITE_DATA = {
       {
         id: 'extra',
         label: '기타 추가 메뉴',
+        icon: 'pouch',
         note: null,
         items: [
           { name: '장어즙 1박스', description: '80ml × 50포', priceType: 'fixed', options: [{ label: '현금가', amount: 120000 }, { label: '카드가', amount: 130000 }] }
@@ -67,7 +78,9 @@ window.SITE_DATA = {
   },
 
   /* ------------------------------------------------------------------------
-   * 2-1) 이벤트 — 홍보 포스터(assets/img/events/)와 확인된 가격만 사용
+   * 2-1) 이벤트 — 첫 화면 가로 배너(한 장씩 넘김)로 표시
+   *    홍보 포스터(assets/img/events/)와 확인된 가격만 사용
+   *    - 배너 순서 = 아래 적힌 순서. 배너를 누르면 포스터를 크게 볼 수 있습니다.
    *    - active: false 로 바꾸면 화면에서 바로 숨겨집니다. (종료된 이벤트)
    *    - startsAt / endsAt: 'YYYY-MM-DD' 를 넣으면 그 기간에만 보입니다. (서울 날짜 기준, 모르면 null)
    *    - price: 판매 가격, originalPrice: 할인 전 가격(있으면 할인 금액을 자동 계산해 강조)
@@ -110,20 +123,6 @@ window.SITE_DATA = {
       prices: [{ label: '현금가', amount: 120000 }, { label: '카드가', amount: 130000 }],
       image: 'assets/img/events/eel-juice.webp', imageLarge: 'assets/img/events/eel-juice-lg.webp',
       alt: '장어즙 1박스 50포 포스터: 카드가 130,000원, 현금가 120,000원'
-    },
-    {
-      id: 'bulttuk', kind: 'deal', active: true, startsAt: null, endsAt: null,
-      badge: '추천 주류', title: '장어와 벌떡주', description: '15가지 한약재를 달여 만든 술 · 375ml · 13%',
-      price: 15000,
-      image: 'assets/img/events/bulttuk.webp', imageLarge: 'assets/img/events/bulttuk-lg.webp',
-      alt: '장어와 벌떡주 포스터: 15,000원'
-    },
-    {
-      id: 'cass-zero', kind: 'deal', active: true, startsAt: null, endsAt: null,
-      badge: '무알코올 맥주', title: '카스 제로',
-      price: 4000,
-      image: 'assets/img/events/cass-zero.webp', imageLarge: 'assets/img/events/cass-zero-lg.webp',
-      alt: '카스 제로 무알코올 맥주 포스터: 4,000원'
     }
   ],
 
@@ -178,10 +177,10 @@ window.SITE_DATA = {
    * ---------------------------------------------------------------------- */
   gallery: {
     categories: [
-      { id: 'food', label: '장어구이' },
       { id: 'exterior', label: '외관·입구' },
       { id: 'interior', label: '매장 내부' },
       { id: 'seats', label: '좌석·단체석' },
+      { id: 'food', label: '장어구이' },
       { id: 'selfbar', label: '반찬 셀프바' },
       { id: 'parking', label: '주차장' }
     ],

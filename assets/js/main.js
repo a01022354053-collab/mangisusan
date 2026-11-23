@@ -60,6 +60,18 @@
     return svg;
   }
 
+  /** 메뉴판 먹선 일러스트 (index.html 의 <symbol id="ill-…">) */
+  function illustration(name, extraClass) {
+    var svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('class', 'ill ill--' + name + (extraClass ? ' ' + extraClass : ''));
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    var use = document.createElementNS(SVG_NS, 'use');
+    use.setAttribute('href', '#ill-' + name);
+    svg.appendChild(use);
+    return svg;
+  }
+
   /** 요소 내용 교체 (구형 브라우저 호환) */
   function setContent(el) {
     while (el.firstChild) el.removeChild(el.firstChild);
@@ -495,12 +507,16 @@
     var option = (item.options || [])[0] || {};
     var price = formatPrice(option);
     return h('div', { className: 'menu-hero' }, [
-      h('p', { className: 'menu-hero__name', text: item.name }),
-      h('p', { className: 'menu-hero__price' }, [
-        option.label ? h('span', { className: 'menu-hero__unit', text: option.label }) : null,
-        h('strong', { className: 'menu-hero__amount', text: price || '가격 확인 중' })
+      illustration('eel', 'menu-hero__eel'),
+      h('div', { className: 'menu-hero__text' }, [
+        h('p', { className: 'menu-hero__name', text: item.name }),
+        h('p', { className: 'menu-hero__price' }, [
+          option.label ? h('span', { className: 'menu-hero__unit', text: option.label }) : null,
+          h('strong', { className: 'menu-hero__amount', text: price || '가격 확인 중' })
+        ]),
+        item.description ? h('p', { className: 'menu-hero__desc', text: item.description }) : null
       ]),
-      item.description ? h('p', { className: 'menu-hero__desc', text: item.description }) : null
+      illustration('grill', 'menu-hero__grill')
     ]);
   }
 
@@ -510,8 +526,10 @@
     if (!root || !menu || !Array.isArray(menu.categories) || !menu.categories.length) return;
 
     var head = h('div', { className: 'menu-board__head' }, [
+      illustration('wave', 'menu-board__wave menu-board__wave--l'),
       h('img', { className: 'menu-board__seal', src: 'assets/img/logo-seal.webp', width: '304', height: '351', alt: '', loading: 'lazy' }),
-      h('p', { className: 'menu-board__title', text: '만기수산 차림표' })
+      h('p', { className: 'menu-board__title', text: '만기수산 차림표' }),
+      illustration('wave', 'menu-board__wave menu-board__wave--r')
     ]);
 
     var notice = hasAnyPrice(menu.categories) ? null : h('p', { className: 'menu-board__notice' }, [
@@ -527,14 +545,17 @@
         if (item.highlight) { highlights.push(item); return false; }
         return true;
       });
-      return { label: category.label, note: category.note, items: items, hadHighlight: items.length !== (category.items || []).length };
+      return { label: category.label, icon: category.icon, note: category.note, items: items, hadHighlight: items.length !== (category.items || []).length };
     });
 
     var filled = categories.filter(function (c) { return c.items.length; });
     var empty = categories.filter(function (c) { return !c.items.length && !c.hadHighlight; });
     var blocks = filled.map(function (category) {
       return h('section', { className: 'menu-cat', 'aria-label': category.label }, [
-        h('h3', { className: 'menu-cat__title', text: category.label }),
+        h('h3', { className: 'menu-cat__title' }, [
+          category.icon ? icon(category.icon, 'menu-cat__icon') : null,
+          h('span', { text: category.label })
+        ]),
         category.note ? h('p', { className: 'menu-cat__note', text: category.note }) : null,
         h('ul', { className: 'menu-list' }, category.items.map(renderMenuItem))
       ]);
@@ -548,6 +569,12 @@
         h('p', { className: 'menu-cat__note', text: '확인되는 대로 올려 드릴게요. 궁금하시면 전화로 문의해 주세요.' })
       ]));
     }
+    // 빈 곳을 채우는 그림 (숯불 화로 · 소주 · 물결) — 글자를 가리지 않도록 목록의 한 칸으로 배치
+    blocks.push(h('div', { className: 'menu-art', 'aria-hidden': 'true' }, [
+      illustration('grill', 'menu-art__grill'),
+      illustration('soju', 'menu-art__soju'),
+      illustration('wave', 'menu-art__wave')
+    ]));
     var cats = h('div', { className: 'menu-cats' }, blocks);
 
     var updated = menu.lastUpdated && BH
@@ -558,8 +585,15 @@
   }
 
   /* ======================================================================
-   * 이벤트 — 진행 중인 것만 (active, startsAt~endsAt)
+   * 이벤트 배너 — 첫 화면, 가로로 한 장씩 넘기는 배너
+   * - 손가락으로 밀기(스와이프) / 화살표 / 점 버튼 / 키보드 ← →
+   * - 7초마다 천천히 다음 배너로. 마우스를 올리거나, 누르거나, 일시정지하면 멈춤
+   * - 동작 줄이기 설정이면 자동 넘김 없음
+   * - 진행 중인 이벤트만 (active, startsAt~endsAt). 하나도 없으면 배너와 '이벤트' 바로가기를 숨김
    * ==================================================================== */
+  var BANNER_INTERVAL_MS = 7000;
+  var BANNER_SLIDE_MS = 700;
+
   function eventIsLive(event) {
     if (!event || event.active === false) return false;
     if (!BH || (!event.startsAt && !event.endsAt)) return true;
@@ -576,45 +610,71 @@
     return '기간: ' + from + (from || to ? ' ~ ' : '') + to;
   }
 
-  function eventPoster(event, onOpen) {
-    if (!isSafeUrl(event.image)) return null;
-    return h('button', {
-      type: 'button',
-      className: 'event-poster',
-      'aria-label': (event.alt || event.title) + ' — 포스터 크게 보기',
-      onclick: onOpen
-    }, [
-      h('img', { src: event.image, alt: '', loading: 'lazy', decoding: 'async' }),
-      h('span', { className: 'event-poster__zoom', 'aria-hidden': 'true' }, icon('zoom'))
-    ]);
-  }
-
-  function eventPrice(event) {
+  /** 배너 가운데의 핵심 내용: 할인 가격 / 결제별 가격 / 참여 혜택 */
+  function bannerOffer(event) {
     if (Array.isArray(event.prices) && event.prices.length) {
-      return h('ul', { className: 'event-prices' }, event.prices.map(function (p, i) {
-        return h('li', { className: 'event-prices__row' + (i === 0 ? ' is-best' : '') }, [
-          h('span', { className: 'event-prices__label', text: p.label }),
-          h('strong', { text: won(p.amount) })
+      return h('ul', { className: 'banner-prices' }, event.prices.map(function (p, i) {
+        return h('li', { className: 'banner-prices__row' + (i === 0 ? ' is-best' : '') }, [
+          h('span', { className: 'banner-prices__label', text: p.label }),
+          h('strong', { className: 'banner-prices__amount', text: won(p.amount) })
         ]);
       }));
     }
-    if (typeof event.price !== 'number') return null;
-    var hasDiscount = typeof event.originalPrice === 'number' && event.originalPrice > event.price;
-    return h('div', { className: 'event-price' }, [
-      hasDiscount ? h('s', { className: 'event-price__was' }, [h('span', { className: 'visually-hidden', text: '할인 전 ' }), won(event.originalPrice)]) : null,
-      h('strong', { className: 'event-price__now' }, [hasDiscount ? h('span', { className: 'visually-hidden', text: '할인 가격 ' }) : null, won(event.price)]),
-      hasDiscount ? h('span', { className: 'event-price__save', text: won(event.originalPrice - event.price) + ' 할인' }) : null
+    if (typeof event.price === 'number') {
+      var hasDiscount = typeof event.originalPrice === 'number' && event.originalPrice > event.price;
+      return h('p', { className: 'banner-price' }, [
+        hasDiscount ? h('s', { className: 'banner-price__was' }, [h('span', { className: 'visually-hidden', text: '할인 전 ' }), won(event.originalPrice)]) : null,
+        h('strong', { className: 'banner-price__now' }, [hasDiscount ? h('span', { className: 'visually-hidden', text: ', 할인 가격 ' }) : null, won(event.price)]),
+        hasDiscount ? h('span', { className: 'banner-price__save', text: won(event.originalPrice - event.price) + ' 할인' }) : null
+      ]);
+    }
+    if (event.reward) {
+      return h('p', { className: 'banner-reward' }, [h('span', { className: 'banner-reward__pre', text: '참여하시면 ' }), h('strong', { text: event.reward })]);
+    }
+    return null;
+  }
+
+  function bannerSlide(event, index, total, onPoster) {
+    var steps = Array.isArray(event.steps) && event.steps.length
+      ? h('ol', { className: 'banner-steps' }, event.steps.map(function (step) { return h('li', { text: step }); }))
+      : null;
+    var poster = isSafeUrl(event.image) ? h('button', {
+      type: 'button',
+      className: 'banner-poster',
+      'aria-label': (event.alt || event.title) + ' — 포스터 크게 보기',
+      onclick: onPoster
+    }, [
+      h('img', { src: event.image, alt: '', loading: index === 0 ? 'eager' : 'lazy', decoding: 'async', width: '560', height: '800' }),
+      h('span', { className: 'banner-poster__zoom', 'aria-hidden': 'true' }, icon('zoom'))
+    ]) : null;
+
+    return h('div', {
+      className: 'banner-slide banner-slide--' + (event.id || 'event'),
+      role: 'group',
+      'aria-roledescription': '배너',
+      'aria-label': (index + 1) + ' / ' + total + ': ' + event.title
+    }, [
+      illustration('eel', 'banner-slide__eel'),
+      illustration('wave', 'banner-slide__wave'),
+      h('div', { className: 'banner-slide__tag', 'aria-hidden': 'true' }, h('span', { text: event.badge || '이벤트' })),
+      h('div', { className: 'banner-slide__body' }, [
+        h('p', { className: 'banner-slide__kicker', text: event.badge || '이벤트' }),
+        h('h3', { className: 'banner-slide__title', text: event.title }),
+        event.description ? h('p', { className: 'banner-slide__desc', text: event.description }) : null,
+        bannerOffer(event),
+        steps,
+        eventPeriod(event) ? h('p', { className: 'banner-slide__period', text: eventPeriod(event) }) : null
+      ]),
+      poster
     ]);
   }
 
   function renderEvents() {
     var root = document.querySelector('[data-events-root]');
-    var section = document.getElementById('events');
     var events = (DATA.events || []).filter(eventIsLive);
     if (!root) return;
     if (!events.length) {
-      // 진행 중인 이벤트가 하나도 없으면 섹션과 바로가기를 숨김
-      if (section) section.hidden = true;
+      root.hidden = true;
       Array.prototype.forEach.call(document.querySelectorAll('a[href="#events"]'), function (a) {
         var li = a.closest('li');
         if (li) li.hidden = true;
@@ -623,49 +683,136 @@
     }
 
     var posters = events.filter(function (e) { return isSafeUrl(e.imageLarge || e.image); }).map(function (e) {
-      return { src: e.imageLarge || e.image, alt: e.alt || e.title, caption: e.title };
+      return { id: e.id, src: e.imageLarge || e.image, alt: e.alt || e.title, caption: e.title };
     });
     function opener(event) {
       return function () {
         var index = 0;
-        posters.forEach(function (p, i) { if (p.caption === event.title) index = i; });
+        posters.forEach(function (p, i) { if (p.id === event.id) index = i; });
+        pause('lightbox');
         openLightbox(posters, index);
       };
     }
 
-    var features = events.filter(function (e) { return e.kind === 'feature'; });
-    var deals = events.filter(function (e) { return e.kind !== 'feature'; });
+    var total = events.length;
+    var track = h('div', { className: 'event-banner__track', tabindex: '0', 'aria-label': '이벤트 배너 (좌우로 넘기기)' },
+      events.map(function (event, i) { return bannerSlide(event, i, total, opener(event)); }));
+    var slides = Array.prototype.slice.call(track.children);
+    var current = 0;
 
-    var featureEls = features.map(function (event) {
-      return h('article', { className: 'event-feature' }, [
-        eventPoster(event, opener(event)),
-        h('div', { className: 'event-feature__body' }, [
-          h('p', { className: 'event-badge', text: event.badge || '이벤트' }),
-          h('h3', { className: 'event-feature__title', text: event.title }),
-          event.reward ? h('p', { className: 'event-feature__reward' }, ['참여하시면 ', h('strong', { text: event.reward })]) : null,
-          Array.isArray(event.steps) && event.steps.length
-            ? h('ol', { className: 'event-steps' }, event.steps.map(function (step) { return h('li', { text: step }); }))
-            : null,
-          eventPeriod(event) ? h('p', { className: 'event-period', text: eventPeriod(event) }) : null
-        ])
-      ]);
+    var dots = h('div', { className: 'event-banner__dots', role: 'group', 'aria-label': '배너 고르기' }, events.map(function (event, i) {
+      return h('button', {
+        type: 'button',
+        className: 'event-banner__dot',
+        'aria-label': (i + 1) + '번째 배너: ' + event.title,
+        onclick: function () { userAction(); goTo(i); }
+      });
+    }));
+    var prevBtn = h('button', { type: 'button', className: 'event-banner__arrow', 'aria-label': '이전 배너', onclick: function () { userAction(); goTo(current - 1); } }, icon('chevron-left'));
+    var nextBtn = h('button', { type: 'button', className: 'event-banner__arrow', 'aria-label': '다음 배너', onclick: function () { userAction(); goTo(current + 1); } }, icon('chevron-right'));
+    var playBtn = h('button', { type: 'button', className: 'event-banner__play', onclick: function () { setStopped(!stopped); } });
+    var counter = h('span', { className: 'event-banner__count', 'aria-hidden': 'true' });
+    var controls = total > 1 ? h('div', { className: 'event-banner__controls' }, [prevBtn, dots, nextBtn, counter, playBtn]) : null;
+
+    setContent(root,
+      h('h2', { className: 'visually-hidden', text: '진행 중인 이벤트' }),
+      h('div', { className: 'event-banner__frame' }, track),
+      controls
+    );
+    root.setAttribute('role', 'region');
+    root.setAttribute('aria-roledescription', '배너 모음');
+    root.setAttribute('aria-label', '진행 중인 이벤트');
+    root.hidden = false;
+
+    function markCurrent(index) {
+      current = index;
+      slides.forEach(function (slide, i) {
+        slide.classList.toggle('is-current', i === index);
+        slide.setAttribute('aria-hidden', i === index ? 'false' : 'true');
+        // 보이지 않는 배너의 버튼은 Tab 으로 가지 않게
+        Array.prototype.forEach.call(slide.querySelectorAll('button, a'), function (el) { el.tabIndex = i === index ? 0 : -1; });
+      });
+      Array.prototype.forEach.call(dots.children, function (dot, i) {
+        if (i === index) dot.setAttribute('aria-current', 'true'); else dot.removeAttribute('aria-current');
+      });
+      counter.textContent = (index + 1) + ' / ' + total;
+    }
+
+    // 부드럽게 이동 (브라우저 기본 smooth 보다 천천히). 이동하는 동안만 칸 맞춤(snap)을 끔
+    var anim = null;
+    function goTo(index) {
+      index = (index + total) % total;
+      var from = track.scrollLeft;
+      var to = index * track.clientWidth; // 배너 한 장 = 화면 칸 너비
+      markCurrent(index);
+      if (anim) cancelAnimationFrame(anim);
+      if (reducedMotion || Math.abs(to - from) < 2) { track.scrollLeft = to; return; }
+      var startAt = null;
+      var duration = Math.min(1100, BANNER_SLIDE_MS + Math.abs(to - from) / track.clientWidth * 80);
+      track.classList.add('is-animating');
+      function frame(ts) {
+        if (startAt === null) startAt = ts;
+        var t = Math.min(1, (ts - startAt) / duration);
+        var eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        track.scrollLeft = from + (to - from) * eased;
+        if (t < 1) anim = requestAnimationFrame(frame);
+        else { anim = null; track.classList.remove('is-animating'); }
+      }
+      anim = requestAnimationFrame(frame);
+    }
+
+    // 손가락으로 넘겼을 때 현재 배너 번호 맞추기
+    var scrollTimer = null;
+    track.addEventListener('scroll', function () {
+      if (anim) return;
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(function () {
+        var index = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+        if (index !== current) markCurrent(Math.max(0, Math.min(total - 1, index)));
+      }, 80);
+    }, { passive: true });
+    track.addEventListener('keydown', function (event) {
+      if (event.key === 'ArrowRight') { event.preventDefault(); userAction(); goTo(current + 1); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); userAction(); goTo(current - 1); }
     });
+    window.addEventListener('resize', function () { if (!anim) track.scrollLeft = current * track.clientWidth; });
 
-    var dealList = deals.length ? h('ul', { className: 'event-grid' }, deals.map(function (event) {
-      return h('li', null, h('article', { className: 'event-card' }, [
-        eventPoster(event, opener(event)),
-        h('div', { className: 'event-card__body' }, [
-          h('p', { className: 'event-badge', text: event.badge || '이벤트' }),
-          h('h3', { className: 'event-card__title', text: event.title }),
-          event.description ? h('p', { className: 'event-card__desc', text: event.description }) : null,
-          eventPrice(event),
-          eventPeriod(event) ? h('p', { className: 'event-period', text: eventPeriod(event) }) : null
-        ])
-      ]));
-    })) : null;
+    // 자동 넘김: 멈춤 사유가 하나라도 있으면 멈춤
+    var stopped = reducedMotion;        // 사용자가 일시정지 버튼을 누름 (동작 줄이기면 처음부터 멈춤)
+    var holds = {};                     // hover, focus, touch, offscreen, hidden, lightbox
+    var timer = null;
+    function pause(reason) { holds[reason] = true; schedule(); }
+    function resume(reason) { delete holds[reason]; schedule(); }
+    function schedule() {
+      clearTimeout(timer);
+      if (stopped || total < 2 || Object.keys(holds).length) return;
+      timer = setTimeout(function () { goTo(current + 1); schedule(); }, BANNER_INTERVAL_MS);
+    }
+    function userAction() { schedule(); } // 직접 넘기면 7초를 처음부터 다시 셈
+    function setStopped(value) {
+      stopped = value;
+      playBtn.setAttribute('aria-label', stopped ? '배너 자동 넘김 시작' : '배너 자동 넘김 멈춤');
+      setContent(playBtn, icon(stopped ? 'play' : 'pause'));
+      schedule();
+    }
 
-    setContent(root, featureEls, dealList,
-      h('p', { className: 'event-note' }, [icon('info', 'icon--xs'), '행사 기간과 세부 조건은 매장에 문의해 주세요. 포스터를 누르면 크게 볼 수 있습니다.']));
+    root.addEventListener('mouseenter', function () { pause('hover'); });
+    root.addEventListener('mouseleave', function () { resume('hover'); });
+    root.addEventListener('focusin', function () { pause('focus'); });
+    root.addEventListener('focusout', function (event) { if (!root.contains(event.relatedTarget)) resume('focus'); });
+    track.addEventListener('touchstart', function () { pause('touch'); }, { passive: true });
+    track.addEventListener('touchend', function () { setTimeout(function () { resume('touch'); }, 4000); }, { passive: true });
+    document.addEventListener('visibilitychange', function () { if (document.hidden) pause('hidden'); else resume('hidden'); });
+    var lightbox = document.getElementById('lightbox');
+    if (lightbox) lightbox.addEventListener('close', function () { resume('lightbox'); });
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) resume('offscreen'); else pause('offscreen');
+      }).observe(root);
+    }
+
+    markCurrent(0);
+    setStopped(stopped);
   }
 
   /* ======================================================================
@@ -765,83 +912,108 @@
   }
 
   /* ======================================================================
-   * 매장 사진 — 같은 비율의 틀, 누르면 크게 보기
+   * 매장 사진 — 큰 화면 한 장 + 아래 목록 (매장 안내 카드 안)
+   * - 화살표 / 목록 / 손가락으로 밀어서 넘김, 사진은 부드럽게 바뀜
+   * - 실제 사진을 누르면 크게 보기
+   * - 사진이 오기 전: 분류별 '사진 준비 중' 자리 (실제 사진처럼 보이지 않게)
    * ==================================================================== */
   function renderGallery() {
     var root = document.querySelector('[data-gallery-root]');
     var gallery = DATA.gallery;
     if (!root || !gallery || !Array.isArray(gallery.categories)) return;
 
-    var photos = (gallery.photos || []).filter(function (photo) { return photo && isSafeUrl(photo.src); });
     var categoryLabel = {};
     gallery.categories.forEach(function (c) { categoryLabel[c.id] = c.label; });
+    var photos = (gallery.photos || []).filter(function (photo) { return photo && isSafeUrl(photo.src); });
+    // 분류 순서대로 정렬 (외관 → 내부 → 좌석 …)
+    var order = gallery.categories.map(function (c) { return c.id; });
+    photos.sort(function (a, b) { return order.indexOf(a.category) - order.indexOf(b.category); });
 
-    if (!photos.length) {
-      // 사진이 오기 전: 분류별 사진 자리 (실제 사진처럼 보이지 않도록 빈 틀로 표시)
-      setContent(root, h('ul', { className: 'photo-frames', 'aria-label': '준비 중인 사진', tabindex: '0' }, gallery.categories.map(function (c) {
-        return h('li', { className: 'photo-frame' }, [
-          icon('camera'),
-          h('span', { className: 'photo-frame__label', text: c.label }),
-          h('span', { className: 'photo-frame__desc', text: '사진 준비 중' })
-        ]);
-      })));
-      return;
-    }
+    var items = photos.length
+      ? photos.map(function (photo) {
+          return { photo: photo, label: photo.caption || categoryLabel[photo.category] || '' };
+        })
+      : gallery.categories.map(function (c) { return { photo: null, label: c.label }; });
+    var total = items.length;
+    var current = 0;
 
-    var currentFilter = 'all';
-    var visiblePhotos = photos;
-    var grid = h('ul', { className: 'gallery-grid', 'aria-label': '매장 사진 목록', tabindex: '0' });
-    var chips = h('div', { className: 'filter-chips', role: 'group', 'aria-label': '사진 분류' });
-
-    function countOf(id) {
-      return photos.filter(function (p) { return p.category === id; }).length;
-    }
-    var filters = [{ id: 'all', label: '전체', count: photos.length }].concat(
-      gallery.categories
-        .map(function (c) { return { id: c.id, label: c.label, count: countOf(c.id) }; })
-        .filter(function (c) { return c.count > 0; })
-    );
-
-    function asItems(list) {
-      return list.map(function (photo) {
-        return { src: photo.src, alt: photo.alt, caption: photo.caption || categoryLabel[photo.category] || '', isSample: photo.isSample };
-      });
-    }
-
-    function drawGrid() {
-      visiblePhotos = currentFilter === 'all' ? photos : photos.filter(function (p) { return p.category === currentFilter; });
-      setContent(grid, visiblePhotos.map(function (photo, index) {
-        var label = photo.caption || categoryLabel[photo.category] || '';
-        return h('li', null, h('button', {
-          type: 'button',
-          className: 'gallery-item',
-          'aria-label': (photo.alt || label) + (photo.isSample ? ' (예시 이미지)' : '') + ' — 크게 보기',
-          onclick: function () { openLightbox(asItems(visiblePhotos), index); }
-        }, [
-          h('img', { src: photo.thumb && isSafeUrl(photo.thumb) ? photo.thumb : photo.src, alt: '', loading: 'lazy', decoding: 'async' }),
-          label ? h('span', { className: 'gallery-item__label', 'aria-hidden': 'true', text: label }) : null,
-          photo.isSample ? h('span', { className: 'sample-badge', 'aria-hidden': 'true', text: '예시 이미지' }) : null
-        ]));
-      }));
-      observeReveal(grid);
-    }
-
-    filters.forEach(function (filter) {
-      chips.appendChild(h('button', {
-        type: 'button',
-        className: 'filter-chip',
-        'aria-pressed': filter.id === 'all' ? 'true' : 'false',
-        onclick: function (event) {
-          currentFilter = filter.id;
-          Array.prototype.forEach.call(chips.children, function (chip) { chip.setAttribute('aria-pressed', 'false'); });
-          event.currentTarget.setAttribute('aria-pressed', 'true');
-          drawGrid();
-        }
-      }, [filter.label, h('span', { className: 'filter-chip__count', text: String(filter.count) })]));
+    var lightboxItems = photos.map(function (photo) {
+      return { src: photo.src, alt: photo.alt, caption: photo.caption || categoryLabel[photo.category] || '', isSample: photo.isSample };
     });
 
-    drawGrid();
-    setContent(root, chips, grid);
+    var slides = items.map(function (item, i) {
+      if (!item.photo) {
+        return h('div', { className: 'photo-viewer__slide photo-viewer__slide--empty', 'aria-hidden': 'true' }, [
+          icon('camera'),
+          h('span', { className: 'photo-viewer__empty-label', text: item.label }),
+          h('span', { className: 'photo-viewer__empty-desc', text: '사진 준비 중' })
+        ]);
+      }
+      var photo = item.photo;
+      return h('button', {
+        type: 'button',
+        className: 'photo-viewer__slide',
+        'aria-label': (photo.alt || item.label) + (photo.isSample ? ' (예시 이미지)' : '') + ' — 크게 보기',
+        onclick: function () { openLightbox(lightboxItems, i); }
+      }, [
+        h('img', { src: photo.src, alt: '', loading: 'lazy', decoding: 'async' }),
+        photo.isSample ? h('span', { className: 'sample-badge', 'aria-hidden': 'true', text: '예시 이미지' }) : null
+      ]);
+    });
+
+    var caption = h('p', { className: 'photo-viewer__caption', 'aria-live': 'polite' });
+    var stage = h('div', { className: 'photo-viewer__stage' }, slides.concat([
+      total > 1 ? h('button', { type: 'button', className: 'photo-viewer__nav photo-viewer__nav--prev', 'aria-label': '이전 사진', onclick: function () { show(current - 1); } }, icon('chevron-left')) : null,
+      total > 1 ? h('button', { type: 'button', className: 'photo-viewer__nav photo-viewer__nav--next', 'aria-label': '다음 사진', onclick: function () { show(current + 1); } }, icon('chevron-right')) : null,
+      caption
+    ]).filter(Boolean));
+
+    var thumbs = h('ul', { className: 'photo-viewer__thumbs' + (photos.length ? '' : ' photo-viewer__thumbs--labels'), 'aria-label': photos.length ? '사진 목록' : '준비 중인 사진 분류' },
+      items.map(function (item, i) {
+        return h('li', null, h('button', {
+          type: 'button',
+          className: 'photo-viewer__thumb',
+          'aria-label': item.label + (item.photo ? '' : ' 사진 (준비 중)'),
+          onclick: function () { show(i); }
+        }, item.photo
+          ? h('img', { src: item.photo.thumb && isSafeUrl(item.photo.thumb) ? item.photo.thumb : item.photo.src, alt: '', loading: 'lazy', decoding: 'async' })
+          : h('span', { text: item.label })));
+      }));
+
+    function show(index) {
+      var next = (index + total) % total;
+      var dir = index > current || (current === total - 1 && next === 0) ? 1 : -1;
+      stage.style.setProperty('--dir', String(dir));
+      current = next;
+      slides.forEach(function (slide, i) {
+        slide.classList.toggle('is-current', i === current);
+        if (slide.tagName === 'BUTTON') slide.tabIndex = i === current ? 0 : -1;
+      });
+      Array.prototype.forEach.call(thumbs.querySelectorAll('.photo-viewer__thumb'), function (thumb, i) {
+        if (i === current) thumb.setAttribute('aria-current', 'true'); else thumb.removeAttribute('aria-current');
+      });
+      caption.textContent = items[current].label + (items[current].photo ? '' : ' · 사진 준비 중') + '  ' + (current + 1) + ' / ' + total;
+    }
+
+    // 손가락으로 밀어서 넘기기
+    var startX = null;
+    var startY = null;
+    stage.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, { passive: true });
+    stage.addEventListener('touchend', function (e) {
+      if (startX === null) return;
+      var dx = e.changedTouches[0].clientX - startX;
+      var dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) show(current + (dx < 0 ? 1 : -1));
+      startX = null;
+    });
+    stage.addEventListener('keydown', function (event) {
+      if (event.key === 'ArrowRight') show(current + 1);
+      if (event.key === 'ArrowLeft') show(current - 1);
+    });
+
+    show(0);
+    setContent(root, h('div', { className: 'photo-viewer' + (photos.length ? '' : ' photo-viewer--empty') }, [stage, thumbs]),
+      photos.length ? null : h('p', { className: 'photo-viewer__note', text: '외관·내부·좌석 등 실제 매장 사진을 준비하고 있습니다.' }));
   }
 
   /* ======================================================================
@@ -1168,8 +1340,8 @@
    *   그 스크립트가 숨기지 않은 경우(동작 줄이기·구형 브라우저)에는 아무것도 하지 않습니다.
    * ==================================================================== */
   var REVEAL_SELECTOR = '.section__head, .card, .location__map, .location__info, .menu-board, .menu-cat, .menu-hero, ' +
-    '.event-feature, .event-card, .intro__story, .intro__greeting, ' +
-    '.guide-topic, .step, .photo-frame, .gallery-item, .review-cta, .blog-card, .blog__head';
+    '.menu-art, .intro__story, .intro__greeting, ' +
+    '.guide-topic, .step, .review-cta, .blog-card, .blog__head';
   var THUD_IMPACT_MS = 520; // 메뉴판이 바닥에 닿는 순간 (style.css 의 thud 와 맞춤)
   var STEP_MS = 110;        // '슥슥슥' 간격
   var revealObserver = null;
@@ -1241,7 +1413,7 @@
           el.removeEventListener('animationstart', onStart);
           setTimeout(function () { thudImpact(el); }, THUD_IMPACT_MS);
         });
-      } else if (el.classList.contains('menu-cat') || el.classList.contains('menu-hero')) {
+      } else if (el.classList.contains('menu-cat') || el.classList.contains('menu-hero') || el.classList.contains('menu-art')) {
         // 메뉴판이 '쿵' 하고 닿은 뒤에 메뉴 분류가 차례로 내려앉음
         delay = Math.max(0, thudLandsAt + 140 - now) + catStep * 90;
         catStep++;
