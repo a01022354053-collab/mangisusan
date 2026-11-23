@@ -499,21 +499,11 @@
     });
   }
 
-  /** 움직이는 장식 (assets/js/menu-art.js) — 내용은 고정된 SVG 문자열 */
-  function menuArt(name, className) {
-    var art = window.MENU_ART && window.MENU_ART[name];
-    if (!art) return null;
-    var box = h('span', { className: className, 'aria-hidden': 'true' });
-    box.innerHTML = art;
-    return box;
-  }
-
-  /** 대표 가격 띠: 숯불 석쇠 + '민물장어 100g당 9,500원' */
+  /** 대표 가격 띠: '민물장어 100g당 9,500원' */
   function renderMenuHighlight(item) {
     var option = (item.options || [])[0] || {};
     var price = formatPrice(option);
     return h('div', { className: 'menu-hero' }, [
-      menuArt('grill', 'menu-hero__art'),
       h('div', { className: 'menu-hero__text' }, [
         h('p', { className: 'menu-hero__name', text: item.name }),
         h('p', { className: 'menu-hero__price' }, [
@@ -542,7 +532,6 @@
     if (!root || !menu || !Array.isArray(menu.categories) || !menu.categories.length) return;
 
     var head = h('div', { className: 'menu-board__head' }, [
-      h('img', { className: 'menu-board__seal', src: 'assets/img/logo-seal.webp', width: '304', height: '351', alt: '', loading: 'lazy' }),
       h('p', { className: 'menu-board__title', text: '만기수산 차림표' })
     ]);
 
@@ -562,17 +551,14 @@
         return true;
       });
       if (category.strip && items.length) { strips.push({ label: category.label, items: items }); return; }
-      categories.push({ id: category.id, label: category.label, deco: category.deco, note: category.note, items: items, hadHighlight: items.length !== (category.items || []).length });
+      categories.push({ id: category.id, label: category.label, note: category.note, items: items, hadHighlight: items.length !== (category.items || []).length });
     });
 
     var filled = categories.filter(function (c) { return c.items.length; });
     var empty = categories.filter(function (c) { return !c.items.length && !c.hadHighlight; });
     var blocks = filled.map(function (category) {
-      return h('section', { className: 'menu-cat menu-cat--' + (category.id || 'etc') + (category.deco ? ' has-deco' : ''), 'aria-label': category.label }, [
-        h('h3', { className: 'menu-cat__title' }, [
-          h('span', { text: category.label }),
-          category.deco ? menuArt(category.deco, 'menu-cat__deco menu-cat__deco--' + category.deco) : null
-        ]),
+      return h('section', { className: 'menu-cat menu-cat--' + (category.id || 'etc'), 'aria-label': category.label }, [
+        h('h3', { className: 'menu-cat__title' }, h('span', { text: category.label })),
         category.note ? h('p', { className: 'menu-cat__note', text: category.note }) : null,
         h('ul', { className: 'menu-list' }, category.items.map(renderMenuItem))
       ]);
@@ -593,15 +579,6 @@
       : null;
 
     setContent(root, head, notice, highlights.map(renderMenuHighlight), strips.map(renderMenuStrip), cats, updated);
-
-    // 장식은 메뉴판이 화면에 보일 때만 움직임 (배터리·성능)
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (entries) {
-        root.classList.toggle('is-live', entries[0].isIntersecting);
-      }, { rootMargin: '80px 0px' }).observe(root);
-    } else {
-      root.classList.add('is-live');
-    }
   }
 
   /* ======================================================================

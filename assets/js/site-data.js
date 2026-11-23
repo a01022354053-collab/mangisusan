@@ -32,8 +32,6 @@ window.SITE_DATA = {
    *      badge: '대표', // 이름 아래 작은 표시 (선택)
    *      soldOut: false
    *    }
-   *    분류의 deco: 분류 제목 옆 움직이는 장식 (assets/js/menu-art.js)
-   *      'pot' 김 나는 뚝배기 · 'fizz' 기포 오르는 잔 · 'bag' 포장 봉투
    *    분류의 strip: true → 대표 가격 아래 한 줄로 (상차림비)
    * ---------------------------------------------------------------------- */
   menu: {
@@ -59,7 +57,6 @@ window.SITE_DATA = {
       {
         id: 'meal',
         label: '식사',
-        deco: 'pot',
         note: null,
         items: [
           { name: '장어탕 (밥 포함)', badge: '대표', priceType: 'fixed', options: [{ label: null, amount: 8000 }] },
@@ -72,7 +69,6 @@ window.SITE_DATA = {
       {
         id: 'takeout',
         label: '포장',
-        deco: 'bag',
         note: null,
         items: [
           { name: '장어탕 포장', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
@@ -112,7 +108,6 @@ window.SITE_DATA = {
       {
         id: 'beverage',
         label: '음료',
-        deco: 'fizz',
         note: null,
         items: [
           { name: '음료수', priceType: 'fixed', options: [{ label: null, amount: 2000 }] },
