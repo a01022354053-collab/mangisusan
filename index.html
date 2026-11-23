@@ -53,6 +53,7 @@
 <script src="assets/js/site-data.js" defer></script>
 <script src="assets/js/business-hours.js" defer></script>
 <script src="assets/js/hero-water.js" defer></script>
+<script src="assets/js/menu-art.js" defer></script>
 <script src="assets/js/main.js" defer></script>
 </head>
 <body>
@@ -113,7 +114,7 @@
   <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
   <symbol id="i-zoom" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></symbol>
   <symbol id="i-bowl" viewBox="0 0 24 24"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10M8 3c.3.4.6 1 0 2s-.3 1.7 0 2M12 3c.3.4.6 1 0 2s-.3 1.7 0 2M16 3c.3.4.6 1 0 2s-.3 1.7 0 2"/></symbol>
-  <!-- 메뉴판 일러스트 (먹선 라인 + 붉은 포인트) — 선 굵기는 화면 크기와 상관없이 일정 -->
+  <!-- 이벤트 배너 배경의 먹선 장어·물결 -->
   <symbol id="ill-eel" viewBox="0 0 240 70">
     <g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke">
       <path pathLength="1" d="M12 38 C14 29 24 24 37 25 C58 14 84 15 110 31 C135 46 160 47 184 33 C198 25 214 21 230 24 C222 28 210 32 198 40 C174 56 138 57 110 44 C86 33 62 32 42 40 C29 45 16 45 12 38 Z"/>
@@ -124,42 +125,12 @@
     </g>
     <circle cx="24" cy="32" r="2" fill="currentColor"/>
   </symbol>
-  <symbol id="ill-grill" viewBox="0 0 180 150">
-    <g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke">
-      <path class="ill-smoke" pathLength="1" d="M66 42 c-8-7 6-12 0-20 c-6-8 6-12 2-19" stroke-width="1.6"/>
-      <path class="ill-smoke" pathLength="1" d="M98 38 c-8-7 6-12 0-20 c-6-8 6-12 2-19" stroke-width="1.6"/>
-      <path class="ill-smoke" pathLength="1" d="M126 44 c-6-6 5-10 0-16 c-5-6 5-9 2-14" stroke-width="1.6"/>
-      <rect pathLength="1" x="40" y="52" width="46" height="15" rx="7.5" transform="rotate(-5 63 59.5)"/>
-      <rect pathLength="1" x="94" y="51" width="46" height="15" rx="7.5" transform="rotate(4 117 58.5)"/>
-      <path pathLength="1" d="M53 55 l-4 10 M63 54 l-4 10 M73 53 l-4 10 M107 53 l-4 10 M117 54 l-4 10 M127 55 l-4 10" style="stroke:var(--ill-red,#a8141b)" stroke-width="1.6"/>
-      <ellipse pathLength="1" cx="90" cy="75" rx="68" ry="11"/>
-      <path pathLength="1" d="M38 81 C70 85 110 85 142 81" stroke-width="1.4"/>
-      <path pathLength="1" d="M26 76 C28 108 56 124 90 124 C124 124 152 108 154 76"/>
-      <path pathLength="1" d="M33 96 C56 106 124 106 147 96" stroke-width="1.6"/>
-      <path pathLength="1" d="M62 117 c-6-5-3-11 2-14 c0 4 4 5 4 9 c0 3-3 5-6 5 Z M88 120 c-7-6-3-13 2-17 c0 5 5 6 5 11 c0 3-3 6-7 6 Z M114 117 c-6-5-3-11 2-14 c0 4 4 5 4 9 c0 3-3 5-6 5 Z" style="stroke:var(--ill-red,#a8141b)" stroke-width="1.8"/>
-      <path pathLength="1" d="M50 117 L42 142 M130 117 L138 142 M34 142 h26 M120 142 h26"/>
-    </g>
-  </symbol>
-  <symbol id="ill-soju" viewBox="0 0 120 150">
-    <g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke">
-      <path pathLength="1" d="M31 6 h16 v9 h-16 Z"/>
-      <path pathLength="1" d="M33 15 v17 c0 9 -14 13 -14 27 v76 c0 5 3 8 8 8 h24 c5 0 8 -3 8 -8 v-76 c0 -14 -14 -18 -14 -27 v-17"/>
-      <rect pathLength="1" x="19" y="76" width="40" height="34" rx="2" style="stroke:var(--ill-red,#a8141b)"/>
-      <path pathLength="1" d="M31 84 v18 M39 84 v18 M47 86 h-3" style="stroke:var(--ill-red,#a8141b)" stroke-width="1.6"/>
-      <path pathLength="1" d="M74 108 l5 35 h24 l5 -35 Z"/>
-      <path pathLength="1" d="M76 120 h30" style="stroke:var(--ill-red,#a8141b)" stroke-width="1.6"/>
-    </g>
-  </symbol>
   <symbol id="ill-wave" viewBox="0 0 160 28" preserveAspectRatio="none">
     <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" vector-effect="non-scaling-stroke">
       <path pathLength="1" d="M2 10 c10 -8 20 -8 30 0 s20 8 30 0 s20 -8 30 0 s20 8 30 0 s20 -8 30 0"/>
       <path pathLength="1" d="M2 20 c10 -8 20 -8 30 0 s20 8 30 0 s20 -8 30 0 s20 8 30 0 s20 -8 30 0" style="stroke:var(--ill-red,#a8141b)" opacity=".7"/>
     </g>
   </symbol>
-  <!-- 메뉴 분류 아이콘 -->
-  <symbol id="i-soju" viewBox="0 0 24 24"><path d="M8 2h3M8.5 2v4c0 1.4-2.5 2.3-2.5 4.6V20a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-9.4C13 8.3 10.5 7.4 10.5 6V2M6 13h7"/><path d="M16 14l.7 7h3.6l.7-7z"/></symbol>
-  <symbol id="i-cup" viewBox="0 0 24 24"><path d="M6 4h12l-1.6 16.1a1 1 0 0 1-1 .9H8.6a1 1 0 0 1-1-.9z"/><path d="M6.5 9h11M13 4l2-2"/></symbol>
-  <symbol id="i-pouch" viewBox="0 0 24 24"><path d="M3 9h18v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 9l2-4h14l2 4M9 5V3h6v2M9 14h6"/></symbol>
 </svg>
 
 <a class="skip-link" href="#main">본문 바로가기</a>
@@ -247,7 +218,6 @@
     </a>
     <ul class="site-nav__list" data-nav-list>
       <li><a href="#menu">메뉴판</a></li>
-      <li><a href="#events">이벤트</a></li>
       <li><a href="#info">매장정보</a></li>
       <li><a href="#gallery">사진</a></li>
       <li><a href="#reviews">리뷰</a></li>
@@ -275,7 +245,7 @@
   </section>
 
   <!-- ===================================================================
-       ③ 메뉴판(가격 안내) — 먹선 일러스트는 위쪽 <symbol id="ill-…"> — 내용은 site-data.js 의 menu
+       ③ 메뉴판(가격 안내) — 움직이는 장식은 assets/js/menu-art.js — 내용은 site-data.js 의 menu
        =================================================================== -->
   <section class="section section--menu" id="menu" aria-labelledby="menu-title">
     <div class="container">
@@ -651,7 +621,6 @@
 <nav class="tabbar" aria-label="하단 메뉴" data-tabbar>
   <ul class="tabbar__list" data-nav-list>
     <li><a class="tabbar__item" href="#menu"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg><span>메뉴판</span></a></li>
-    <li><a class="tabbar__item" href="#events"><svg class="icon" aria-hidden="true"><use href="#i-gift"/></svg><span>이벤트</span></a></li>
     <li><a class="tabbar__item" href="#info"><svg class="icon" aria-hidden="true"><use href="#i-store"/></svg><span>매장정보</span></a></li>
     <li><a class="tabbar__item" href="#reviews"><svg class="icon" aria-hidden="true"><use href="#i-message"/></svg><span>리뷰</span></a></li>
     <li><a class="tabbar__item" href="#location"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span>오시는 길</span></a></li>

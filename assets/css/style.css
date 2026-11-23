@@ -1418,12 +1418,12 @@ html.has-dialog { overflow: hidden; }
    (head 의 스크립트가 html 에 js-reveal 을 붙였을 때만. 동작 줄이기 설정이면 붙지 않음)
    ========================================================================== */
 .js-reveal :is(.section__head, .card, .location__map, .location__info, .menu-board, .menu-cat,
-  .guide-topic, .menu-hero, .menu-art, .intro__story, .intro__greeting, .step, .review-cta, .blog-card, .blog__head):not(.is-revealed) {
+  .guide-topic, .menu-hero, .menu-strip, .intro__story, .intro__greeting, .step, .review-cta, .blog-card, .blog__head):not(.is-revealed) {
   opacity: 0;
 }
 /* '슥' — 위에서 떨어져 살짝 튕기며 자리 잡음 */
 .js-reveal :is(.section__head, .card, .location__map, .location__info, .menu-cat,
-  .guide-topic, .menu-hero, .menu-art, .intro__story, .intro__greeting, .step, .review-cta, .blog-card, .blog__head).is-revealed {
+  .guide-topic, .menu-hero, .menu-strip, .intro__story, .intro__greeting, .step, .review-cta, .blog-card, .blog__head).is-revealed {
   animation: drop-in .62s cubic-bezier(.2, 1.3, .45, 1) var(--reveal-delay, 0ms) backwards;
 }
 @keyframes drop-in {
@@ -2221,76 +2221,152 @@ html.has-dialog { overflow: hidden; }
 }
 
 /* ==========================================================================
-   메뉴판 일러스트 — 먹선 라인 그림, 붉은색은 포인트에만
+   메뉴판 (크게) — 대표 가격 띠 · 상차림비 줄 · 분류별 움직이는 장식
    ========================================================================== */
 .ill { display: block; overflow: visible; fill: none; color: var(--c-ink); --ill-red: var(--c-red); }
-.menu-board__head { position: relative; }
-.menu-board__wave {
-  position: absolute;
-  top: 58%;
-  width: min(26%, 190px);
-  height: 22px;
-  color: rgba(75, 48, 30, .75);
-}
-.menu-board__wave--l { left: 0; }
-.menu-board__wave--r { right: 0; transform: scaleX(-1); }
 
-/* 대표 가격 띠: 왼쪽 장어, 오른쪽 숯불 화로 */
-.menu-hero { grid-template-columns: minmax(0, 1fr); }
+/* 대표 가격 띠: 숯불 석쇠(왼쪽) + 민물장어 100g당 9,500원 */
+.menu-hero { grid-template-columns: minmax(0, 1fr); max-width: 760px; padding: 14px 16px 16px; }
+.menu-hero__art { display: block; width: min(230px, 72%); margin: 0 auto -4px; }
 .menu-hero__text { display: grid; justify-items: center; gap: 2px; }
-.menu-hero__eel { width: min(200px, 62%); height: auto; aspect-ratio: 240 / 70; margin: -4px auto 2px; }
-.menu-hero__grill { display: none; }
 
-/* 분류 제목: 아이콘 + 붓글씨 + 끝까지 이어지는 줄 */
-.menu-cat__title { border-bottom: 0; padding-bottom: 0; }
-.menu-cat__title::after { content: ""; flex: 1; height: 1.5px; margin-left: 4px; background: rgba(75, 48, 30, .35); transform: translateY(3px); }
-.menu-cat__icon { flex: none; width: 26px; height: 26px; color: var(--c-ink); stroke-width: 1.7; transform: translateY(2px); }
+/* 상차림비 줄 */
+.menu-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; max-width: 760px; margin: -12px auto 26px; padding: 10px 14px; border-bottom: 1.5px dashed rgba(75, 48, 30, .3); list-style: none; }
+.menu-strip__item { display: flex; align-items: baseline; gap: 10px; font-size: var(--fs-md); }
+.menu-strip__name { color: var(--c-ink-2); font-weight: 700; }
+.menu-strip .menu-row__price { font-size: var(--fs-base); }
+
+/* 분류 제목: 붓글씨 + 끝까지 이어지는 줄 + (오른쪽) 움직이는 장식 */
+.menu-cat__title { position: relative; border-bottom: 0; padding-bottom: 0; }
+.menu-cat__title::after { content: ""; flex: 1; order: 1; height: 1.5px; margin-left: 4px; background: rgba(75, 48, 30, .35); transform: translateY(3px); }
+.menu-cat__deco { order: 2; flex: none; display: block; margin-left: 2px; }
+.menu-cat__deco--pot { width: 64px; margin-block: -26px -6px; }
+.menu-cat__deco--bag { width: 40px; margin-block: -18px -4px; }
+.menu-cat__deco--fizz { width: 40px; margin-block: -22px -4px; }
+.menu-cat__deco--drinker { width: 150px; margin-block: -46px -8px; }
 .menu-cat__title + .menu-list,
 .menu-cat__title + .menu-cat__note { margin-top: 6px; }
+.menu-row__tag { margin: 0 6px 0 0; vertical-align: 3px; }
 
-/* 빈 곳을 채우는 그림 칸 */
-.menu-art {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 6px;
-  padding: 6px 0 22px;
-  color: var(--c-ink);
-  pointer-events: none;
-}
-.menu-art__grill { width: 150px; height: auto; aspect-ratio: 180 / 150; }
-.menu-art__soju { width: 92px; height: auto; aspect-ratio: 120 / 150; }
-.menu-art__wave { position: absolute; left: 8%; right: 8%; bottom: 0; width: auto; height: 22px; color: rgba(75, 48, 30, .7); }
-
-@media (max-width: 479px) {
-  .menu-board__wave { display: none; }
-  .menu-art__grill { width: 120px; }
-  .menu-art__soju { width: 74px; }
-}
 @media (min-width: 760px) {
   .menu-hero {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: center;
-    gap: 18px;
-    max-width: 720px;
-    padding: 18px 26px 16px;
+    gap: 10px 22px;
+    padding: 14px 28px 14px 18px;
   }
-  .menu-hero__eel { width: 100%; max-width: 190px; margin: 0; justify-self: end; transform: rotate(-4deg); }
-  .menu-hero__grill { display: block; width: 100%; max-width: 116px; height: auto; aspect-ratio: 180 / 150; justify-self: start; }
-  .menu-art { display: block; break-inside: avoid; padding: 0 0 26px; }
-  .menu-art__grill { display: none; }
-  .menu-art__soju { width: 110px; margin-inline: auto; }
+  .menu-hero__art { width: 100%; max-width: 260px; margin: 0; justify-self: end; }
+  .menu-hero__text { justify-items: start; text-align: left; }
+  .menu-hero__price { justify-content: flex-start; }
+  .menu-hero__amount { font-size: 3.4rem; }
+  .menu-hero__name { font-size: 2.5rem; }
 }
 
-/* 그림이 붓으로 그리듯 천천히 나타남 (메뉴판이 '쿵' 내려앉은 뒤) */
-.js-reveal .menu-board .ill { stroke-dasharray: 1; stroke-dashoffset: 1; }
-.js-reveal .menu-board.is-revealed .menu-board__wave,
-.js-reveal .menu-hero.is-revealed .ill,
-.js-reveal .menu-art.is-revealed .ill {
-  animation: ill-draw 1.8s cubic-bezier(.45, .05, .25, 1) calc(var(--reveal-delay, 0ms) + .45s) forwards;
+/* PC: 메뉴판을 크게 (화면 폭 가득), 글자도 크게, 3단 */
+@media (min-width: 1024px) {
+  .menu-board { max-width: var(--container); padding: 52px 60px 40px; }
+  .menu-board__seal { width: 60px; }
+  .menu-board__title { font-size: 2.9rem; }
+  .menu-hero { max-width: 860px; margin-bottom: 30px; }
+  .menu-hero__art { max-width: 300px; }
+  .menu-hero__amount { font-size: 3.8rem; }
+  .menu-strip { max-width: 860px; margin-bottom: 34px; }
+  .menu-strip__item { font-size: var(--fs-base); }
+  .menu-strip .menu-row__price { font-size: var(--fs-lg); }
+  .menu-cats { columns: 3; column-gap: 48px; }
+  .menu-cat__title { font-size: 2.2rem; }
+  .menu-row__name { font-size: var(--fs-lg); }
+  .menu-row__price { font-size: 1.1875rem; }
 }
-@keyframes ill-draw { to { stroke-dashoffset: 0; } }
+
+/* ==========================================================================
+   메뉴판 움직이는 장식 (assets/js/menu-art.js 의 그림)
+   - 메뉴판이 화면에 보일 때(.is-live)만 움직임, 동작 줄이기 설정이면 멈춤
+   ========================================================================== */
+.art { display: block; overflow: visible; }
+.art * { transform-box: fill-box; }
+.art-kya { font-family: var(--font-brush, sans-serif); fill: var(--c-red, #a8141b); opacity: 0; }
+
+.menu-board :is(.art-smoke__p, .art-ember, .art-coal-halo, .art-shine, .art-spark, .art-piece, .art-steam__p,
+  .art-head, .art-glass, .art-glass__soju, .art-blush, .art-kya, .art-tail, .art-bubble, .art-foam, .art-bag) {
+  animation-play-state: paused;
+}
+.menu-board.is-live :is(.art-smoke__p, .art-ember, .art-coal-halo, .art-shine, .art-spark, .art-piece, .art-steam__p,
+  .art-head, .art-glass, .art-glass__soju, .art-blush, .art-kya, .art-tail, .art-bubble, .art-foam, .art-bag) {
+  animation-play-state: running;
+}
+
+/* 숯불 석쇠: 숯이 숨 쉬듯 빛나고, 장어가 지글거리며 연기와 불티가 오름 */
+.art-smoke__p { opacity: 0; transform-origin: 50% 100%; animation: art-rise 3.2s ease-out infinite; }
+.art-smoke__p--2 { animation-delay: 1.05s; }
+.art-smoke__p--3 { animation-delay: 2.1s; }
+@keyframes art-rise {
+  0% { opacity: 0; transform: translateY(8px) scaleY(.7); }
+  25% { opacity: .55; }
+  100% { opacity: 0; transform: translateY(-22px) scaleY(1.15) scaleX(1.3); }
+}
+.art-coal-halo { transform-origin: 50% 50%; animation: art-halo 2.6s ease-in-out infinite alternate; }
+@keyframes art-halo { from { opacity: .55; transform: scale(.96); } to { opacity: 1; transform: scale(1.04); } }
+.art-ember { animation: art-ember 1.9s ease-in-out infinite alternate; }
+.art-ember--2 { animation-delay: -.6s; } .art-ember--3 { animation-delay: -1.2s; } .art-ember--4 { animation-delay: -.3s; }
+.art-ember--5 { animation-delay: -.9s; } .art-ember--6 { animation-delay: -1.5s; }
+@keyframes art-ember { from { opacity: .35; } to { opacity: 1; } }
+.art-piece { transform-origin: 50% 100%; animation: art-sizzle 1.6s ease-in-out infinite; }
+.art-piece--2 { animation-delay: -.5s; } .art-piece--3 { animation-delay: -1s; }
+@keyframes art-sizzle { 0%, 100% { transform: none; } 50% { transform: translateY(-1px) scaleY(1.04); } }
+.art-shine { opacity: .15; animation: art-shine 2.4s ease-in-out infinite; }
+@keyframes art-shine { 0%, 100% { opacity: .12; } 50% { opacity: .6; } }
+.art-spark { opacity: 0; animation: art-spark 2.2s ease-out infinite; }
+.art-spark--2 { animation-delay: .7s; } .art-spark--3 { animation-delay: 1.3s; } .art-spark--4 { animation-delay: 1.8s; }
+@keyframes art-spark {
+  0% { opacity: 0; transform: translate(0, 0); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(6px, -46px); }
+}
+
+/* 뚝배기: 김이 모락모락 */
+.art-steam__p { opacity: 0; transform-origin: 50% 100%; animation: art-rise 2.8s ease-out infinite; }
+.art-steam__p--2 { animation-delay: .9s; }
+.art-steam__p--3 { animation-delay: 1.8s; }
+
+/* 술 마시는 장어: 잔을 들어 한 모금 → 고개 들고 '캬~' → 볼이 빨개짐 (5초마다) */
+.art-head { transform-origin: 20% 95%; animation: art-head 5s ease-in-out infinite; }
+@keyframes art-head {
+  0%, 18% { transform: none; }
+  30%, 46% { transform: rotate(14deg) translate(2px, 3px); }
+  58% { transform: rotate(-8deg); }
+  70%, 100% { transform: none; }
+}
+.art-glass { transform-origin: 0% 100%; animation: art-glass 5s ease-in-out infinite; }
+@keyframes art-glass {
+  0%, 18% { transform: none; }
+  30%, 46% { transform: translate(-12px, -26px) rotate(-38deg); }
+  58%, 100% { transform: none; }
+}
+.art-glass__soju { transform-origin: 50% 100%; animation: art-soju 5s ease-in-out infinite; }
+@keyframes art-soju { 0%, 30% { transform: none; } 46%, 92% { transform: scaleY(.35); } 100% { transform: none; } }
+.art-blush { opacity: .35; transform-origin: 50% 50%; animation: art-blush 5s ease-in-out infinite; }
+@keyframes art-blush { 0%, 50% { opacity: .3; transform: none; } 62%, 88% { opacity: .95; transform: scale(1.25); } 100% { opacity: .3; } }
+.art-kya { transform-origin: 0 100%; animation: art-kya 5s ease-out infinite; }
+@keyframes art-kya {
+  0%, 54% { opacity: 0; transform: translateY(6px) scale(.8); }
+  62% { opacity: 1; transform: none; }
+  82% { opacity: 1; transform: translateY(-4px); }
+  92%, 100% { opacity: 0; transform: translateY(-8px); }
+}
+.art-tail { transform-origin: 100% 50%; animation: art-tail 2.4s ease-in-out infinite; }
+@keyframes art-tail { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-3deg) translateY(-1px); } }
+
+/* 음료: 기포가 보글보글 */
+.art-bubble { animation: art-bubble 2s ease-in infinite; }
+.art-bubble--2 { animation-delay: .5s; } .art-bubble--3 { animation-delay: 1s; } .art-bubble--4 { animation-delay: 1.5s; }
+@keyframes art-bubble { 0% { opacity: 0; transform: translateY(0); } 15% { opacity: 1; } 100% { opacity: .2; transform: translateY(-38px); } }
+.art-foam { transform-origin: 50% 100%; animation: art-foam 2s ease-in-out infinite alternate; }
+@keyframes art-foam { from { transform: scaleY(.92); } to { transform: scaleY(1.08); } }
+
+/* 포장 봉투: 손잡이에 매달려 살랑 */
+.art-bag { transform-origin: 50% 0%; animation: art-bag 3s ease-in-out infinite; }
+@keyframes art-bag { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
 
 /* ==========================================================================
    매장 안내 — PC 에서는 왼쪽 매장 정보, 오른쪽 매장 사진

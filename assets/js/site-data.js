@@ -29,13 +29,15 @@ window.SITE_DATA = {
    *      options: [ { label: '1kg', amount: 50000 } ],   // amount: 숫자(원), 모르면 null
    *                     // 할인 중이면 { amount: 27000, originalAmount: 30000 } → 원래 가격에 줄
    *      highlight: true,  // 메뉴판 맨 위에 크게 보여 줄 대표 가격 (장어)
-   *      badge: '할인 세트', // 이름 옆 작은 표시 (선택)
+   *      badge: '대표', // 이름 아래 작은 표시 (선택)
    *      soldOut: false
    *    }
-   *    분류의 icon: 분류 이름 옆 작은 그림 — 'bowl'(식사) 'soju'(주류) 'cup'(음료) 'pouch'(장어즙 등)
+   *    분류의 deco: 분류 제목 옆 움직이는 장식 (assets/js/menu-art.js)
+   *      'pot' 김 나는 뚝배기 · 'drinker' 술 마시는 장어 · 'fizz' 기포 오르는 잔 · 'bag' 포장 봉투
+   *    분류의 strip: true → 대표 가격 아래 한 줄로 (상차림비)
    * ---------------------------------------------------------------------- */
   menu: {
-    lastUpdated: '2026-11-22', // 가격 기준일 (장어 가격·포스터 가격 확인일)
+    lastUpdated: '2026-11-19', // 가격 기준일 (네이버 플레이스 메뉴 최근 업데이트 26.11.19)
     categories: [
       {
         id: 'eel',
@@ -45,33 +47,77 @@ window.SITE_DATA = {
           { name: '민물장어', description: null, priceType: 'weight', highlight: true, options: [{ label: '100g당', amount: 9500 }] }
         ]
       },
-      { id: 'meal', label: '식사류', icon: 'bowl', note: null, items: [] },
+      {
+        id: 'table',
+        label: '상차림비',
+        strip: true, // 메뉴판 맨 위 대표 가격 아래 한 줄로 표시
+        note: null,
+        items: [
+          { name: '상차림비 (8세 이상)', priceType: 'fixed', options: [{ label: null, amount: 3000 }] }
+        ]
+      },
+      {
+        id: 'meal',
+        label: '식사',
+        deco: 'pot',
+        note: null,
+        items: [
+          { name: '장어탕 (밥 포함)', badge: '대표', priceType: 'fixed', options: [{ label: null, amount: 8000 }] },
+          { name: '장어탕 홀식사', priceType: 'fixed', options: [{ label: null, amount: 10000 }] },
+          { name: '된장찌개 (밥 포함)', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },
+          { name: '열무국수', priceType: 'fixed', options: [{ label: null, amount: 5000 }] },
+          { name: '공기밥', priceType: 'fixed', options: [{ label: null, amount: 1000 }] }
+        ]
+      },
+      {
+        id: 'takeout',
+        label: '포장',
+        deco: 'bag',
+        note: null,
+        items: [
+          { name: '장어탕 포장', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
+          { name: '장어즙 1박스', description: '80ml × 50포', priceType: 'fixed', options: [{ label: '현금가', amount: 120000 }, { label: '카드가', amount: 130000 }] }
+        ]
+      },
       {
         id: 'liquor',
         label: '주류',
-        icon: 'soju',
-        note: '아래 외 주류 가격은 확인 중입니다.',
+        deco: 'drinker',
+        note: null,
         items: [
-          { name: '벌떡주', description: '15가지 한약재를 달여 만든 술 · 375ml · 13%', priceType: 'fixed', options: [{ label: null, amount: 15000 }] }
+          { name: '소주', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },
+          { name: '맥주', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },
+          { name: '청하', priceType: 'fixed', options: [{ label: null, amount: 5000 }] },
+          { name: '별빛청하', priceType: 'fixed', options: [{ label: null, amount: 6000 }] },
+          { name: '호랑이 막걸리', priceType: 'fixed', options: [{ label: null, amount: 5000 }] },
+          { name: '벌떡주', description: '15가지 한약재를 달여 만든 술 · 375ml · 13%', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
+          { name: '복분자', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
+          { name: '복분자 세트', description: '토닉워터 2병 + 레몬', priceType: 'fixed', options: [{ label: null, amount: 17000 }] }
+        ]
+      },
+      {
+        id: 'spirits',
+        label: '화요 · 일품진로 · 고량주',
+        note: null,
+        items: [
+          { name: '화요 25도', priceType: 'fixed', options: [{ label: null, amount: 24000 }] },
+          { name: '화요 세트', description: '토닉워터 2병 + 레몬', priceType: 'fixed', options: [{ label: null, amount: 26000 }] },
+          { name: '일품진로 25도', priceType: 'fixed', options: [{ label: null, amount: 25000 }] },
+          { name: '일품진로 세트', description: '토닉워터 2병 + 레몬', priceType: 'fixed', options: [{ label: null, amount: 27000 }] },
+          { name: '일품진로 오크 41도', priceType: 'fixed', options: [{ label: null, amount: 50000 }] },
+          { name: '일품진로 오크 세트', priceType: 'fixed', options: [{ label: null, amount: 52000 }] },
+          { name: '연태고량주 (중)', priceType: 'fixed', options: [{ label: null, amount: 20000 }] },
+          { name: '연태고량주 (대)', priceType: 'fixed', options: [{ label: null, amount: 35000 }] }
         ]
       },
       {
         id: 'beverage',
         label: '음료',
-        icon: 'cup',
-        note: '아래 외 음료 가격은 확인 중입니다.',
-        items: [
-          { name: '카스 제로 (무알코올 맥주)', priceType: 'fixed', options: [{ label: null, amount: 4000 }] }
-        ]
-      },
-      { id: 'table', label: '상차림비', note: null, items: [] },
-      {
-        id: 'extra',
-        label: '기타 추가 메뉴',
-        icon: 'pouch',
+        deco: 'fizz',
         note: null,
         items: [
-          { name: '장어즙 1박스', description: '80ml × 50포', priceType: 'fixed', options: [{ label: '현금가', amount: 120000 }, { label: '카드가', amount: 130000 }] }
+          { name: '음료수', priceType: 'fixed', options: [{ label: null, amount: 2000 }] },
+          { name: '제로맥주', priceType: 'fixed', options: [{ label: null, amount: 4000 }] }
         ]
       }
     ]

@@ -60,7 +60,7 @@
     return svg;
   }
 
-  /** 메뉴판 먹선 일러스트 (index.html 의 <symbol id="ill-…">) */
+  /** 배너 배경의 먹선 장어·물결 (index.html 의 <symbol id="ill-…">) */
   function illustration(name, extraClass) {
     var svg = document.createElementNS(SVG_NS, 'svg');
     svg.setAttribute('class', 'ill ill--' + name + (extraClass ? ' ' + extraClass : ''));
@@ -459,14 +459,11 @@
   function renderMenuItem(item) {
     var options = Array.isArray(item.options) && item.options.length ? item.options : [{ label: null, amount: null }];
     var nameEl = h('span', { className: 'menu-row__name' }, [
+      item.badge ? h('span', { className: 'menu-row__tag', text: item.badge }) : null,
       item.name,
       item.soldOut ? h('span', { className: 'menu-row__badge', text: '품절' }) : null
     ]);
-    // '할인 세트' 같은 표시와 설명은 이름 아래 줄에 (휴대폰에서 이름이 밀리지 않게)
-    var desc = item.badge || item.description ? h('p', { className: 'menu-row__desc' }, [
-      item.badge ? h('span', { className: 'menu-row__tag', text: item.badge }) : null,
-      item.description || null
-    ]) : null;
+    var desc = item.description ? h('p', { className: 'menu-row__desc', text: item.description }) : null;
 
     // 가격이 하나면 이름 옆에 바로, 여러 개(현금가·카드가 등)면 아래에 줄마다 표시
     if (options.length === 1) {
@@ -502,12 +499,21 @@
     });
   }
 
-  /** 대표 가격 띠: '민물장어 100g당 9,500원' */
+  /** 움직이는 장식 (assets/js/menu-art.js) — 내용은 고정된 SVG 문자열 */
+  function menuArt(name, className) {
+    var art = window.MENU_ART && window.MENU_ART[name];
+    if (!art) return null;
+    var box = h('span', { className: className, 'aria-hidden': 'true' });
+    box.innerHTML = art;
+    return box;
+  }
+
+  /** 대표 가격 띠: 숯불 석쇠 + '민물장어 100g당 9,500원' */
   function renderMenuHighlight(item) {
     var option = (item.options || [])[0] || {};
     var price = formatPrice(option);
     return h('div', { className: 'menu-hero' }, [
-      illustration('eel', 'menu-hero__eel'),
+      menuArt('grill', 'menu-hero__art'),
       h('div', { className: 'menu-hero__text' }, [
         h('p', { className: 'menu-hero__name', text: item.name }),
         h('p', { className: 'menu-hero__price' }, [
@@ -515,9 +521,19 @@
           h('strong', { className: 'menu-hero__amount', text: price || '가격 확인 중' })
         ]),
         item.description ? h('p', { className: 'menu-hero__desc', text: item.description }) : null
-      ]),
-      illustration('grill', 'menu-hero__grill')
+      ])
     ]);
+  }
+
+  /** 대표 가격 아래 한 줄 (상차림비) */
+  function renderMenuStrip(category) {
+    return h('ul', { className: 'menu-strip', 'aria-label': category.label }, category.items.map(function (item) {
+      var option = (item.options || [])[0] || {};
+      return h('li', { className: 'menu-strip__item' }, [
+        h('span', { className: 'menu-strip__name', text: item.name }),
+        priceSpan(option)
+      ]);
+    }));
   }
 
   function renderMenu() {
@@ -526,10 +542,8 @@
     if (!root || !menu || !Array.isArray(menu.categories) || !menu.categories.length) return;
 
     var head = h('div', { className: 'menu-board__head' }, [
-      illustration('wave', 'menu-board__wave menu-board__wave--l'),
       h('img', { className: 'menu-board__seal', src: 'assets/img/logo-seal.webp', width: '304', height: '351', alt: '', loading: 'lazy' }),
-      h('p', { className: 'menu-board__title', text: '만기수산 차림표' }),
-      illustration('wave', 'menu-board__wave menu-board__wave--r')
+      h('p', { className: 'menu-board__title', text: '만기수산 차림표' })
     ]);
 
     var notice = hasAnyPrice(menu.categories) ? null : h('p', { className: 'menu-board__notice' }, [
@@ -538,23 +552,26 @@
       '로 문의해 주세요.'
     ]);
 
-    // 대표 가격(highlight)은 위쪽 띠로, 나머지는 분류별 차림표로
+    // 대표 가격(highlight)은 위쪽 띠로, strip 분류는 그 아래 한 줄로, 나머지는 분류별 차림표로
     var highlights = [];
-    var categories = menu.categories.map(function (category) {
+    var strips = [];
+    var categories = [];
+    menu.categories.forEach(function (category) {
       var items = (category.items || []).filter(function (item) {
         if (item.highlight) { highlights.push(item); return false; }
         return true;
       });
-      return { label: category.label, icon: category.icon, note: category.note, items: items, hadHighlight: items.length !== (category.items || []).length };
+      if (category.strip && items.length) { strips.push({ label: category.label, items: items }); return; }
+      categories.push({ id: category.id, label: category.label, deco: category.deco, note: category.note, items: items, hadHighlight: items.length !== (category.items || []).length });
     });
 
     var filled = categories.filter(function (c) { return c.items.length; });
     var empty = categories.filter(function (c) { return !c.items.length && !c.hadHighlight; });
     var blocks = filled.map(function (category) {
-      return h('section', { className: 'menu-cat', 'aria-label': category.label }, [
+      return h('section', { className: 'menu-cat menu-cat--' + (category.id || 'etc') + (category.deco ? ' has-deco' : ''), 'aria-label': category.label }, [
         h('h3', { className: 'menu-cat__title' }, [
-          category.icon ? icon(category.icon, 'menu-cat__icon') : null,
-          h('span', { text: category.label })
+          h('span', { text: category.label }),
+          category.deco ? menuArt(category.deco, 'menu-cat__deco menu-cat__deco--' + category.deco) : null
         ]),
         category.note ? h('p', { className: 'menu-cat__note', text: category.note }) : null,
         h('ul', { className: 'menu-list' }, category.items.map(renderMenuItem))
@@ -562,26 +579,29 @@
     });
     if (empty.length) {
       blocks.push(h('section', { className: 'menu-cat menu-soon', 'aria-label': '가격 확인 중인 메뉴' }, [
-        h('h3', { className: 'menu-cat__title', text: '가격 확인 중' }),
+        h('h3', { className: 'menu-cat__title' }, h('span', { text: '가격 확인 중' })),
         h('ul', { className: 'chip-list menu-soon__list' }, empty.map(function (c) {
           return h('li', { className: 'chip', text: c.label });
         })),
         h('p', { className: 'menu-cat__note', text: '확인되는 대로 올려 드릴게요. 궁금하시면 전화로 문의해 주세요.' })
       ]));
     }
-    // 빈 곳을 채우는 그림 (숯불 화로 · 소주 · 물결) — 글자를 가리지 않도록 목록의 한 칸으로 배치
-    blocks.push(h('div', { className: 'menu-art', 'aria-hidden': 'true' }, [
-      illustration('grill', 'menu-art__grill'),
-      illustration('soju', 'menu-art__soju'),
-      illustration('wave', 'menu-art__wave')
-    ]));
     var cats = h('div', { className: 'menu-cats' }, blocks);
 
     var updated = menu.lastUpdated && BH
       ? h('p', { className: 'menu-updated', text: '가격 기준일: ' + menu.lastUpdated.slice(0, 4) + '년 ' + BH.formatDateKey(menu.lastUpdated) })
       : null;
 
-    setContent(root, head, notice, highlights.map(renderMenuHighlight), cats, updated);
+    setContent(root, head, notice, highlights.map(renderMenuHighlight), strips.map(renderMenuStrip), cats, updated);
+
+    // 장식은 메뉴판이 화면에 보일 때만 움직임 (배터리·성능)
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        root.classList.toggle('is-live', entries[0].isIntersecting);
+      }, { rootMargin: '80px 0px' }).observe(root);
+    } else {
+      root.classList.add('is-live');
+    }
   }
 
   /* ======================================================================
@@ -1340,7 +1360,7 @@
    *   그 스크립트가 숨기지 않은 경우(동작 줄이기·구형 브라우저)에는 아무것도 하지 않습니다.
    * ==================================================================== */
   var REVEAL_SELECTOR = '.section__head, .card, .location__map, .location__info, .menu-board, .menu-cat, .menu-hero, ' +
-    '.menu-art, .intro__story, .intro__greeting, ' +
+    '.menu-strip, .intro__story, .intro__greeting, ' +
     '.guide-topic, .step, .review-cta, .blog-card, .blog__head';
   var THUD_IMPACT_MS = 520; // 메뉴판이 바닥에 닿는 순간 (style.css 의 thud 와 맞춤)
   var STEP_MS = 110;        // '슥슥슥' 간격
@@ -1413,7 +1433,7 @@
           el.removeEventListener('animationstart', onStart);
           setTimeout(function () { thudImpact(el); }, THUD_IMPACT_MS);
         });
-      } else if (el.classList.contains('menu-cat') || el.classList.contains('menu-hero') || el.classList.contains('menu-art')) {
+      } else if (el.classList.contains('menu-cat') || el.classList.contains('menu-hero') || el.classList.contains('menu-strip')) {
         // 메뉴판이 '쿵' 하고 닿은 뒤에 메뉴 분류가 차례로 내려앉음
         delay = Math.max(0, thudLandsAt + 140 - now) + catStep * 90;
         catStep++;
