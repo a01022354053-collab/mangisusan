@@ -273,13 +273,13 @@
   </section>
 
   <!-- ===================================================================
-       ⑤ 매장 안내 (PC: 왼쪽 매장 정보 + 오른쪽 매장 사진)
+       ⑤ 매장 안내 (PC: 왼쪽 매장 정보 + 오른쪽 매장 사진, 아래 오시는 길)
        =================================================================== -->
   <section class="section section--info" id="info" aria-labelledby="info-title">
     <div class="container">
       <div class="section__head">
         <h2 class="section__title" id="info-title">매장 안내</h2>
-        <p class="section__desc">영업시간·주차·편의시설과 매장 모습을 확인해 주세요.</p>
+        <p class="section__desc">영업시간·주차·편의시설·매장 모습과 오시는 길을 확인해 주세요.</p>
       </div>
 
       <div class="info-grid">
@@ -498,6 +498,60 @@
           </ul>
         </article>
 
+        <!-- 오시는 길 (네이버 지도) — 위치 정보는 site-data.js 의 map -->
+        <article class="card card--location" id="location" aria-labelledby="location-title">
+          <div class="card__head">
+            <span class="card__icon" aria-hidden="true"><svg class="icon"><use href="#i-pin"/></svg></span>
+            <h3 class="card__title" id="location-title">오시는 길</h3>
+            <span class="card__note">북삼 인평체육공원 주차장 건너편</span>
+          </div>
+          <div class="location">
+            <figure class="location__map">
+              <div class="map-frame" data-map-slot>
+                <div class="map-frame__status" data-map-status>
+                  <svg class="icon" aria-hidden="true"><use href="#i-map"/></svg>지도를 불러오는 중입니다
+                </div>
+              </div>
+              <figcaption class="map-legend">
+                <span><span class="legend-dot" aria-hidden="true"></span>만기수산셀프매장</span>
+                <span><span class="map-p" aria-hidden="true">P</span>인평체육공원 주차장 (만차 시)</span>
+              </figcaption>
+            </figure>
+
+            <div class="location__info">
+              <div class="location__address">
+                <p class="location__label">주소</p>
+                <p class="location__value">경북 칠곡군 북삼읍 북삼로 58</p>
+                <button type="button" class="text-btn" data-copy="경상북도 칠곡군 북삼읍 북삼로 58" data-copy-done="주소를 복사했습니다.">
+                  <svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>주소 복사
+                </button>
+              </div>
+              <dl class="detail-list detail-list--compact">
+                <div class="detail-list__row">
+                  <dt>위치</dt>
+                  <dd>북삼 인평체육공원 주차장 건너편</dd>
+                </div>
+                <div class="detail-list__row">
+                  <dt>주차</dt>
+                  <dd>가게 앞 무료 주차 · 만차 시 건너편 인평체육공원 주차장</dd>
+                </div>
+                <div class="detail-list__row detail-list__row--phone">
+                  <dt>전화</dt>
+                  <dd><a class="phone-link phone-link--sm" href="tel:054-976-8892">054-976-8892</a></dd>
+                </div>
+              </dl>
+              <div class="btn-row btn-row--stack">
+                <a class="btn btn--outline" href="https://map.naver.com/p/entry/place/1004464648" target="_blank" rel="noopener" data-naver-place-link>
+                  <svg class="icon" aria-hidden="true"><use href="#i-map"/></svg>네이버 지도에서 보기<span class="visually-hidden"> (새 창)</span>
+                </a>
+                <a class="btn btn--primary" href="#location" data-open-directions>
+                  <svg class="icon" aria-hidden="true"><use href="#i-navigation"/></svg>길찾기
+                </a>
+              </div>
+            </div>
+          </div>
+        </article>
+
       </div>
     </div>
   </section>
@@ -530,64 +584,6 @@
         <div data-blog-root>
           <div class="empty-state">
             <p class="empty-state__desc">블로그 후기는 <a class="text-link" href="https://search.naver.com/search.naver?where=blog&amp;query=%EB%A7%8C%EA%B8%B0%EC%88%98%EC%82%B0%20%EB%B6%81%EC%82%BC" target="_blank" rel="noopener">네이버 블로그 검색</a>에서 볼 수 있습니다.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================================================================
-       ⑦ 오시는 길 (네이버 지도) — 위치 정보는 site-data.js 의 map
-       =================================================================== -->
-  <section class="section section--location" id="location" aria-labelledby="location-title">
-    <div class="container">
-      <div class="section__head">
-        <h2 class="section__title" id="location-title">오시는 길</h2>
-        <p class="section__desc">북삼 인평체육공원 주차장 건너편에 있습니다.</p>
-      </div>
-
-      <div class="location">
-        <figure class="location__map">
-          <div class="map-frame" data-map-slot>
-            <div class="map-frame__status" data-map-status>
-              <svg class="icon" aria-hidden="true"><use href="#i-map"/></svg>지도를 불러오는 중입니다
-            </div>
-          </div>
-          <figcaption class="map-legend">
-            <span><span class="legend-dot" aria-hidden="true"></span>만기수산셀프매장</span>
-            <span><span class="map-p" aria-hidden="true">P</span>인평체육공원 주차장 (만차 시)</span>
-          </figcaption>
-        </figure>
-
-        <div class="location__info">
-          <div class="location__address">
-            <p class="location__label">주소</p>
-            <p class="location__value">경북 칠곡군 북삼읍 북삼로 58</p>
-            <button type="button" class="text-btn" data-copy="경상북도 칠곡군 북삼읍 북삼로 58" data-copy-done="주소를 복사했습니다.">
-              <svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>주소 복사
-            </button>
-          </div>
-          <dl class="detail-list detail-list--compact">
-            <div class="detail-list__row">
-              <dt>위치</dt>
-              <dd>북삼 인평체육공원 주차장 건너편</dd>
-            </div>
-            <div class="detail-list__row">
-              <dt>주차</dt>
-              <dd>가게 앞 무료 주차 · 만차 시 건너편 인평체육공원 주차장</dd>
-            </div>
-            <div class="detail-list__row detail-list__row--phone">
-              <dt>전화</dt>
-              <dd><a class="phone-link phone-link--sm" href="tel:054-976-8892">054-976-8892</a></dd>
-            </div>
-          </dl>
-          <div class="btn-row btn-row--stack">
-            <a class="btn btn--outline" href="https://map.naver.com/p/entry/place/1004464648" target="_blank" rel="noopener" data-naver-place-link>
-              <svg class="icon" aria-hidden="true"><use href="#i-map"/></svg>네이버 지도에서 보기<span class="visually-hidden"> (새 창)</span>
-            </a>
-            <a class="btn btn--primary" href="#location" data-open-directions>
-              <svg class="icon" aria-hidden="true"><use href="#i-navigation"/></svg>길찾기
-            </a>
           </div>
         </div>
       </div>

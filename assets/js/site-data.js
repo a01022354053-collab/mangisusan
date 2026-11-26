@@ -179,19 +179,21 @@ window.SITE_DATA = {
    * 3) 처음 오신 손님을 위한 이용 방법 (메뉴판 바로 아래 '이용 방법' 섹션)
    *    - steps: 순서대로 보입니다. icon: door, fish, scale, flame, table, bowl, card 중 하나
    *    - photo: { src, alt } 가 있으면 사진, 없으면 아이콘으로 표시
+   *    - notice: 단계 위에 알림처럼 보이는 안내 (매장 입장)
    *    - sides: 반찬 안내 (처음 상차림 / 이후 셀프바)
    * ---------------------------------------------------------------------- */
   guide: {
+    notice: { title: '매장 입장', text: '들어오시면 직원에게 몇 분인지 알려 주세요. 자리로 안내해 드립니다.' },
     steps: [
       { id: 'choose', icon: 'fish', title: '장어 고르기',
-        description: '매장에 들어오시면 진열대에서 장어를 눈으로 보고 고르세요. 장어는 미리 무게를 재서 포장해 두었습니다.',
+        description: '진열대에서 장어를 눈으로 보고 고르세요.',
         photo: { src: 'assets/img/gallery/interior-04-sm.webp', large: 'assets/img/gallery/interior-04.webp', alt: '무게를 재서 포장해 둔 장어가 놓인 진열대' } },
       { id: 'table', icon: 'table', title: '자리에 앉기',
         description: '테이블에 앉으시면 처음 반찬은 상을 차려 드립니다.',
         photo: { src: 'assets/img/gallery/interior-02-sm.webp', large: 'assets/img/gallery/interior-02.webp', alt: '석쇠가 놓인 테이블이 있는 매장 홀' } },
       { id: 'pre-grill', icon: 'flame', title: '초벌 기다리기',
         description: '고르신 장어는 초벌을 해 드립니다. 잠시만 기다려 주세요.',
-        photo: null },
+        photo: { src: 'assets/img/gallery/pregrill-01-sm.webp', large: 'assets/img/gallery/pregrill-01.webp', alt: '석쇠 위에서 초벌하는 장어' } },
       { id: 'grill', icon: 'flame', title: '구워서 드시기',
         description: '초벌한 장어를 테이블 숯불에서 구워 드시면 됩니다.',
         photo: { src: 'assets/img/gallery/food-05-sm.webp', large: 'assets/img/gallery/food-05.webp', alt: '테이블 숯불 석쇠에서 장어를 굽는 모습' } }
@@ -232,6 +234,10 @@ window.SITE_DATA = {
         alt: '은박 용기에 담긴 노릇하게 구운 장어', isSample: false },
       { src: 'assets/img/gallery/food-05.webp', thumb: 'assets/img/gallery/food-05-sm.webp', category: 'food',
         alt: '테이블 숯불 석쇠에서 장어를 굽는 모습과 생강·마늘·소스 등 곁들임 반찬', isSample: false },
+      { src: 'assets/img/gallery/food-06.webp', thumb: 'assets/img/gallery/food-06-sm.webp', category: 'food',
+        alt: '접시에 담아 낸 구운 장어와 소스·생강·와사비', isSample: false },
+      { src: 'assets/img/gallery/food-07.webp', thumb: 'assets/img/gallery/food-07-sm.webp', category: 'food',
+        alt: '접시에 수북이 담긴 구운 장어와 곁들임 반찬', isSample: false },
       { src: 'assets/img/gallery/interior-01.webp', thumb: 'assets/img/gallery/interior-01-sm.webp', category: 'interior',
         alt: '반찬 셀프바. 반찬통과 그릇이 놓인 스테인리스 선반 위에 셀프바 안내판', isSample: false },
       { src: 'assets/img/gallery/interior-02.webp', thumb: 'assets/img/gallery/interior-02-sm.webp', category: 'interior',
