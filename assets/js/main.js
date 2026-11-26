@@ -8,10 +8,9 @@
  *   initDialogs         길찾기 선택 창 · 닫기
  *   initCopyButtons     주소·전화번호 복사
  *   renderMenu          메뉴판 (site-data.js → menu, 대표 가격은 맨 위에 크게)
- *   renderEvents        이벤트 (site-data.js → events, 진행 중인 것만)
+ *   renderEvents        첫 화면 이벤트 배너 (site-data.js → events, 진행 중인 것만)
  *   renderIntro         장어 소개·사장님 인사말 (내용이 있을 때만)
- *   renderSelfbar       반찬 셀프바
- *   renderGuide         이용 방법 (site-data.js → guide)
+ *   renderGuide         이용 방법 단계 + 반찬 안내 (site-data.js → guide)
  *   renderGallery       매장 사진 + 크게 보기 (site-data.js → gallery)
  *   initMap             네이버 지도 (site-data.js → map, 좌표는 /api/geocode)
  *   initReviews         리뷰 버튼 + 블로그 후기 (/api/blog)
@@ -848,64 +847,48 @@
   }
 
   /* ======================================================================
-   * 반찬 셀프바 — 사진·반찬 이름은 확인된 것만
-   * ==================================================================== */
-  function renderSelfbar() {
-    var root = document.querySelector('[data-selfbar-root]');
-    var selfbar = DATA.selfbar || {};
-    if (!root) return;
-    var photo = selfbar.photo && isSafeUrl(selfbar.photo.src)
-      ? h('button', {
-          type: 'button',
-          className: 'selfbar__photo',
-          'aria-label': (selfbar.photo.alt || '반찬 셀프바 사진') + ' — 크게 보기',
-          onclick: function () { openLightbox([{ src: selfbar.photo.src, alt: selfbar.photo.alt, caption: '반찬 셀프바' }], 0); }
-        }, h('img', { src: selfbar.photo.thumb || selfbar.photo.src, alt: '', loading: 'lazy', decoding: 'async' }))
-      : h('div', { className: 'selfbar__photo selfbar__photo--empty', 'aria-hidden': 'true' }, [icon('camera'), '사진 준비 중']);
-    var items = (selfbar.items || []).filter(Boolean);
-    setContent(root,
-      photo,
-      h('p', { className: 'selfbar__text', text: '반찬은 셀프바에서 직접 가져다 드세요.' }),
-      items.length ? h('ul', { className: 'chip-list selfbar__items' }, items.map(function (name) { return h('li', { className: 'chip', text: name }); })) : null
-    );
-  }
-
-  /* ======================================================================
-   * 이용 방법 (매장 안내 안의 카드)
+   * 이용 방법 — 순서대로 (장어 고르기 → 자리 → 초벌 → 구워 드시기) + 반찬 안내
    * ==================================================================== */
   var GUIDE_ICONS = { door: 'door', fish: 'fish', scale: 'scale', flame: 'flame', table: 'table', bowl: 'bowl', card: 'card' };
+
+  function guideVisual(item, fallbackIcon, label) {
+    var photo = item.photo;
+    if (photo && isSafeUrl(photo.src)) {
+      return h('button', {
+        type: 'button',
+        className: 'flow-step__photo',
+        'aria-label': (photo.alt || label) + ' — 크게 보기',
+        onclick: function () { openLightbox([{ src: isSafeUrl(photo.large) ? photo.large : photo.src, alt: photo.alt, caption: label }], 0); }
+      }, h('img', { src: photo.src, alt: '', loading: 'lazy', decoding: 'async' }));
+    }
+    return h('div', { className: 'flow-step__photo flow-step__photo--icon', 'aria-hidden': 'true' }, icon(GUIDE_ICONS[fallbackIcon] || 'info'));
+  }
 
   function renderGuide() {
     var root = document.querySelector('[data-guide-root]');
     var guide = DATA.guide;
     if (!root || !guide || !Array.isArray(guide.steps) || !guide.steps.length) return;
 
-    if (!guide.published) {
-      // 실제 순서가 확인되지 않았으므로 번호 없이 '안내 예정 항목'만 표시
-      setContent(root,
-        // 휴대폰에서는 옆으로 넘기는 줄이 되므로 키보드로도 넘길 수 있게 tabindex
-        h('ul', { className: 'guide-topics', 'aria-label': '안내 예정 항목', tabindex: '0' }, guide.steps.map(function (step) {
-          return h('li', { className: 'guide-topic' + (step.id === 'self-bar' ? ' guide-topic--self' : '') }, [
-            h('span', { className: 'guide-topic__icon', 'aria-hidden': 'true' }, icon(GUIDE_ICONS[step.icon] || 'info')),
-            h('span', { className: 'guide-topic__name', text: step.title }),
-            step.id === 'self-bar' ? h('span', { className: 'guide-topic__tag', text: '셀프' }) : null
-          ]);
-        })),
-        h('p', { className: 'guide-note', text: '자세한 이용 순서와 사진은 확인 후 안내해 드릴게요. 처음 오시면 직원에게 편하게 물어보세요.' })
-      );
-      return;
-    }
-
-    setContent(root, h('ol', { className: 'steps' }, guide.steps.map(function (step) {
-      var photo = step.photo && isSafeUrl(step.photo.src)
-        ? h('figure', { className: 'step__photo' }, h('img', { src: step.photo.src, alt: step.photo.alt || '', loading: 'lazy', decoding: 'async' }))
-        : h('div', { className: 'step__photo step__photo--empty', 'aria-hidden': 'true' }, [icon(GUIDE_ICONS[step.icon] || 'camera'), '사진 준비 중']);
-      return h('li', { className: 'step' }, [
-        photo,
-        h('h3', { className: 'step__title', text: step.title }),
-        step.description ? h('p', { className: 'step__desc', text: step.description }) : null
+    var flow = h('ol', { className: 'flow' }, guide.steps.map(function (step, i) {
+      return h('li', { className: 'flow-step' }, [
+        guideVisual(step, step.icon, step.title),
+        h('div', { className: 'flow-step__body' }, [
+          h('p', { className: 'flow-step__num', 'aria-hidden': 'true', text: String(i + 1) }),
+          h('h3', { className: 'flow-step__title', text: step.title }),
+          step.description ? h('p', { className: 'flow-step__desc', text: step.description }) : null
+        ])
       ]);
-    })));
+    }));
+
+    var sides = guide.sides && guide.sides.text ? h('div', { className: 'flow-sides' }, [
+      guideVisual(guide.sides, 'bowl', guide.sides.title || '반찬'),
+      h('div', { className: 'flow-sides__body' }, [
+        h('h3', { className: 'flow-sides__title' }, [icon('bowl'), guide.sides.title || '반찬']),
+        h('p', { className: 'flow-sides__text', text: guide.sides.text })
+      ])
+    ]) : null;
+
+    setContent(root, flow, sides);
   }
 
   /* ======================================================================
@@ -1351,7 +1334,7 @@
    * ==================================================================== */
   var REVEAL_SELECTOR = '.section__head, .card, .location__map, .location__info, .menu-board, .menu-cat, .menu-hero, ' +
     '.menu-strip, .intro__story, .intro__greeting, ' +
-    '.guide-topic, .step, .review-cta, .blog-card, .blog__head';
+    '.flow-step, .flow-sides, .review-cta, .blog-card, .blog__head';
   var THUD_IMPACT_MS = 520; // 메뉴판이 바닥에 닿는 순간 (style.css 의 thud 와 맞춤)
   var STEP_MS = 110;        // '슥슥슥' 간격
   var revealObserver = null;
@@ -1513,7 +1496,6 @@
     safely('장어 소개', renderIntro);
     safely('메뉴', renderMenu);
     safely('이벤트', renderEvents);
-    safely('셀프바', renderSelfbar);
     safely('이용 방법', renderGuide);
     safely('사진', renderGallery);
     safely('지도', initMap);

@@ -626,17 +626,15 @@ a { color: inherit; }
   .info-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-      "store   hours"
-      "payment hours"
-      "guide   guide"
-      "selfbar parking"
-      "amenities amenities";
+      "store     hours"
+      "parking   hours"
+      "amenities amenities"
+      "photos    photos"
+      "payment   payment";
   }
   .card--store { grid-area: store; }
   .card--hours { grid-area: hours; }
   .card--parking { grid-area: parking; }
-  .card--guide { grid-area: guide; }
-  .card--selfbar { grid-area: selfbar; }
   .card--payment { grid-area: payment; }
   .card--amenities { grid-area: amenities; }
 }
@@ -1022,87 +1020,86 @@ a { color: inherit; }
 }
 
 /* ==========================================================================
-   ⑤ 이용 방법
+   ④ 이용 방법 — 순서대로 이어지는 단계 (장어 고르기 → 자리 → 초벌 → 구워 드시기)
    ========================================================================== */
-.guide-topics { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; list-style: none; }
-.guide-topic {
-  display: grid;
-  justify-items: center;
-  align-content: start;
-  gap: 8px;
-  width: 104px;
-  padding: 16px 6px 14px;
-  border: 1px solid var(--c-line);
-  border-radius: 16px;
+.section--guide { background: var(--c-hanji); background-image: var(--tex-paper); }
+.flow { position: relative; display: grid; gap: 14px; list-style: none; }
+.flow-step { position: relative; display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: start; align-content: start; gap: 14px; }
+/* 단계 사이를 잇는 점선 (휴대폰: 세로) */
+.flow-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 56px;
+  top: 92px;
+  bottom: -14px;
+  border-left: 2px dashed rgba(168, 20, 27, .35);
+}
+.flow-step__photo {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  aspect-ratio: 6 / 5;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-inner);
   background: var(--c-surface);
-  text-align: center;
+  box-shadow: 0 6px 16px rgba(59, 37, 23, .12);
+  cursor: zoom-in;
 }
-.guide-topic__icon {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: var(--c-red-tint);
-  color: var(--c-red);
-}
-.guide-topic__icon .icon { width: 24px; height: 24px; }
-.guide-topic__name { font-size: var(--fs-md); font-weight: 700; line-height: 1.3; }
-.guide-note { display: grid; justify-items: center; gap: 12px; margin-top: 22px; color: var(--c-ink-2); font-size: var(--fs-md); text-align: center; }
-
-.steps { display: grid; gap: 14px; list-style: none; counter-reset: step; }
-.step {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--c-line);
-  border-radius: var(--radius-card);
-  background: var(--c-surface);
-  counter-increment: step;
-}
-.step__photo { aspect-ratio: 4 / 3; max-width: 100%; overflow: hidden; border-radius: var(--radius-inner); background: var(--c-hanji); }
-.step__photo img { width: 100%; height: 100%; object-fit: cover; }
-.step__photo--empty {
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 6px;
-  color: var(--c-ink-3);
-  font-size: var(--fs-sm);
-  border: 1.5px dashed var(--c-line-strong);
-  background-image: var(--tex-paper);
-}
-.step__photo--empty .icon { width: 30px; height: 30px; color: var(--c-red); }
-.step__title { display: flex; align-items: center; gap: 10px; font-size: var(--fs-lg); font-weight: 800; }
-.step__title::before {
-  content: counter(step);
+.flow-step__photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
+.flow-step__photo--icon { display: grid; place-items: center; background: var(--c-red); color: #fff; cursor: default; }
+.flow-step__photo--icon .icon { width: 40px; height: 40px; stroke-width: 1.6; }
+.flow-step__body { display: grid; align-content: start; gap: 4px; padding-top: 2px; }
+.flow-step__num {
   display: inline-grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  flex: none;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: var(--c-red);
+  background: var(--c-ink);
   color: #fff;
   font-size: var(--fs-sm);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
 }
-.step__desc { color: var(--c-ink-2); font-size: var(--fs-md); }
-@media (min-width: 760px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1024px) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.flow-step__title { color: var(--c-ink); font-family: var(--font-brush); font-size: 1.9rem; font-weight: 400; line-height: 1.05; -webkit-text-stroke: .3px currentColor; }
+.flow-step__desc { color: var(--c-ink-2); font-size: var(--fs-md); line-height: 1.55; word-break: keep-all; }
 
-/* 카드 제목 옆 작은 메모 */
-.card__note { margin-left: auto; color: var(--c-ink-3); font-size: var(--fs-sm); }
-@media (max-width: 479px) { .card__note { flex-basis: 100%; margin-left: 48px; margin-top: -8px; } }
-.sample-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #fff;
-  color: var(--c-red);
-  font-size: var(--fs-xs);
-  font-weight: 800;
+/* 반찬 안내 */
+.flow-sides {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+  padding: 14px;
+  border: 1.5px solid rgba(168, 20, 27, .3);
+  border-radius: var(--radius-card);
+  background: var(--c-surface);
+}
+.flow-sides .flow-step__photo { box-shadow: none; }
+.flow-sides__body { display: grid; gap: 4px; }
+.flow-sides__title { display: flex; align-items: center; gap: 6px; color: var(--c-red-dark); font-size: var(--fs-lg); font-weight: 800; }
+.flow-sides__title .icon { width: 20px; height: 20px; }
+.flow-sides__text { color: var(--c-ink-2); font-size: var(--fs-md); line-height: 1.55; word-break: keep-all; }
+
+@media (min-width: 760px) {
+  .flow { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+  .flow-step { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  /* 단계 사이를 잇는 점선 (넓은 화면: 가로, 사진 가운데 높이) */
+  .flow-step:not(:last-child)::after { left: calc(100% - 6px); right: -12px; top: 38%; bottom: auto; border-left: 0; border-top: 2px dashed rgba(168, 20, 27, .4); width: auto; }
+  .flow-step__photo { aspect-ratio: 4 / 3; }
+  .flow-step__photo--icon .icon { width: 52px; height: 52px; }
+  .flow-step__body { justify-items: start; }
+  .flow-step__title { font-size: 2.1rem; }
+  .flow-sides { grid-template-columns: 200px minmax(0, 1fr); gap: 22px; margin-top: 26px; padding: 16px 22px 16px 16px; }
+  .flow-sides__title { font-size: var(--fs-xl); }
+  .flow-sides__text { font-size: var(--fs-base); }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  button.flow-step__photo:hover img { transform: scale(1.05); }
 }
 
 /* ==========================================================================
@@ -1417,12 +1414,12 @@ html.has-dialog { overflow: hidden; }
    (head 의 스크립트가 html 에 js-reveal 을 붙였을 때만. 동작 줄이기 설정이면 붙지 않음)
    ========================================================================== */
 .js-reveal :is(.section__head, .card, .location__map, .location__info, .menu-board, .menu-cat,
-  .guide-topic, .menu-hero, .menu-strip, .intro__story, .intro__greeting, .step, .review-cta, .blog-card, .blog__head):not(.is-revealed) {
+  .flow-step, .flow-sides, .menu-hero, .menu-strip, .intro__story, .intro__greeting, .review-cta, .blog-card, .blog__head):not(.is-revealed) {
   opacity: 0;
 }
 /* '슥' — 위에서 떨어져 살짝 튕기며 자리 잡음 */
 .js-reveal :is(.section__head, .card, .location__map, .location__info, .menu-cat,
-  .guide-topic, .menu-hero, .menu-strip, .intro__story, .intro__greeting, .step, .review-cta, .blog-card, .blog__head).is-revealed {
+  .flow-step, .flow-sides, .menu-hero, .menu-strip, .intro__story, .intro__greeting, .review-cta, .blog-card, .blog__head).is-revealed {
   animation: drop-in .62s cubic-bezier(.2, 1.3, .45, 1) var(--reveal-delay, 0ms) backwards;
 }
 @keyframes drop-in {
@@ -1509,7 +1506,7 @@ html.has-dialog { overflow: hidden; }
    움직임 ② — 버튼에 마우스를 올리면 살짝 떠오르고 아이콘이 반응
    ========================================================================== */
 .btn, .text-btn, .map-link, .tabbar__item, .filter-chip, .icon-btn, .hero__place, .hero__scroll,
-.site-nav__call, .site-nav__list a, .guide-topic, .review-cta, .action, .event-banner__arrow, .event-banner__play, .event-banner__dot, .photo-viewer__nav, .photo-viewer__thumb, .banner-poster {
+.site-nav__call, .site-nav__list a, .review-cta, .action, .event-banner__arrow, .event-banner__play, .event-banner__dot, .photo-viewer__nav, .photo-viewer__thumb, .banner-poster {
   transition: transform .22s cubic-bezier(.3, 1.4, .5, 1), box-shadow .22s ease, background-color .15s ease, border-color .15s ease, color .15s ease;
 }
 .btn--primary { position: relative; overflow: hidden; }
@@ -1535,7 +1532,6 @@ html.has-dialog { overflow: hidden; }
   .site-nav__list a:hover, .site-nav__call:hover, .tabbar__item:hover { transform: translateY(-2px); }
   .call-fab:hover { transform: scale(1.08); }
   .call-fab:hover .icon { animation: ring .6s ease; }
-  .guide-topic:hover { transform: translateY(-5px) rotate(-1deg); box-shadow: 0 12px 22px rgba(59, 37, 23, .1); }
   .action:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(59, 37, 23, .14); }
   .action:hover .icon { animation: pop .45s ease; }
   .action--call:hover .icon { animation: ring .6s ease; }
@@ -1556,7 +1552,7 @@ html.has-dialog { overflow: hidden; }
 /* 누르는 순간 꾹 눌리는 느낌 (휴대폰 터치 포함) */
 @media (prefers-reduced-motion: no-preference) {
   .btn:active, .text-btn:active, .map-link:active, .tabbar__item:active, .call-fab:active, .filter-chip:active,
-  .review-cta:active, .guide-topic:active, .site-nav__list a:active, .action:active,
+  .review-cta:active, .site-nav__list a:active, .action:active,
   .event-banner__arrow:active, .event-banner__play:active, .photo-viewer__nav:active, .photo-viewer__thumb:active {
     transform: translateY(1px) scale(.97);
     transition-duration: .08s;
@@ -1608,7 +1604,6 @@ html.has-dialog { overflow: hidden; }
   .map-pin--store .map-pin__dot { animation: pin-pulse 2.4s ease-out 1s infinite; }
   .review-cta::after { animation: drift 7s ease-in-out infinite alternate; }
   .review-cta__arrow { animation: nudge-x 2.4s ease-in-out infinite; }
-  .guide-topic:hover .guide-topic__icon { animation: wiggle .5s ease; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .tabbar__item[aria-current="true"] .icon { animation: pop .4s ease; }
@@ -1742,50 +1737,6 @@ html.has-dialog { overflow: hidden; }
 @media (min-width: 1024px) { .intro__story { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: 32px; } }
 
 /* ==========================================================================
-   매장 안내: 이용 방법 · 반찬 셀프바
-   ========================================================================== */
-.card__lead--accent {
-  padding: 12px 14px;
-  border-radius: var(--radius-inner);
-  background: var(--c-red-tint);
-  color: var(--c-ink);
-}
-.card__lead--accent strong { color: var(--c-red); }
-.card--guide .guide-topics { justify-content: flex-start; }
-.guide-topic--self { border-color: var(--c-red); box-shadow: inset 0 0 0 1px var(--c-red); }
-.guide-topic__tag { padding: 0 8px; border-radius: 999px; background: var(--c-red); color: #fff; font-size: .6875rem; font-weight: 800; }
-.card--guide .guide-note { display: block; margin-top: 4px; color: var(--c-ink-3); font-size: var(--fs-sm); text-align: left; }
-@media (min-width: 760px) { .card--guide .guide-topics { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); } .card--guide .guide-topic { width: auto; } }
-
-.selfbar { display: grid; gap: 10px; }
-.selfbar__photo {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  aspect-ratio: 4 / 3;
-  padding: 0;
-  overflow: hidden;
-  border: 0;
-  border-radius: var(--radius-inner);
-  background: var(--c-paper);
-  cursor: zoom-in;
-}
-.selfbar__photo img { width: 100%; height: 100%; object-fit: cover; }
-.selfbar__photo--empty {
-  aspect-ratio: 16 / 7;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 4px;
-  border: 1.5px dashed var(--c-line-strong);
-  color: var(--c-ink-3);
-  font-size: var(--fs-sm);
-  cursor: default;
-}
-.selfbar__photo--empty .icon { width: 26px; height: 26px; color: var(--c-red); }
-.selfbar__text { font-weight: 700; }
-
-/* ==========================================================================
    한눈에 보기 — 오늘 카드 요약 칩, 준비 중인 메뉴
    ========================================================================== */
 .today__facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; list-style: none; }
@@ -1881,24 +1832,6 @@ html.has-dialog { overflow: hidden; }
   .location__value { font-size: var(--fs-lg); }
   .detail-list__row--phone { display: none; }
   .detail-list--compact .detail-list__row:nth-last-child(2) { padding-bottom: 0; border-bottom: 0; }
-
-  /* 이용방법: 옆으로 넘기는 한 줄 */
-  .guide-topics {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    margin-left: calc(-1 * var(--pad-l));
-    margin-right: calc(-1 * var(--pad-r));
-    padding: 4px var(--pad-r) 8px var(--pad-l);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-left: var(--pad-l);
-    scrollbar-width: none;
-  }
-  .guide-topics::-webkit-scrollbar { display: none; }
-  .guide-topic { flex: none; width: 92px; padding: 12px 4px 10px; scroll-snap-align: start; }
-  .guide-topic__icon { width: 40px; height: 40px; }
-  .guide-topic__name { font-size: var(--fs-sm); }
-  .guide-note { gap: 10px; margin-top: 14px; font-size: var(--fs-sm); }
 
   /* 리뷰 */
   .review-cta { gap: 12px; padding: 14px 16px; }
@@ -2265,17 +2198,6 @@ html.has-dialog { overflow: hidden; }
    매장 안내 — PC 에서는 왼쪽 매장 정보, 오른쪽 매장 사진
    ========================================================================== */
 .info-photos { min-width: 0; }
-@media (min-width: 760px) and (max-width: 1023px) {
-  .info-grid {
-    grid-template-areas:
-      "store     hours"
-      "parking   hours"
-      "amenities amenities"
-      "photos    photos"
-      "payment   selfbar"
-      "guide     guide";
-  }
-}
 @media (min-width: 760px) { .info-photos { grid-area: photos; } }
 @media (min-width: 1024px) {
   .info-grid {
@@ -2285,12 +2207,13 @@ html.has-dialog { overflow: hidden; }
       "hours     photos"
       "parking   photos"
       "amenities photos"
-      "payment   selfbar"
-      "guide     guide";
+      "payment   photos";
   }
   /* 왼쪽 정보를 내려 보는 동안 사진이 옆에 그대로 보이도록 고정 */
   .card--photos { position: sticky; top: calc(var(--nav-h) + 16px); }
 }
+
+@media (min-width: 760px) and (max-width: 1023px) { .card--payment .pay-list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
 /* ---------- 매장 사진 보기 ---------- */
 .photo-viewer { display: grid; gap: 10px; min-width: 0; }

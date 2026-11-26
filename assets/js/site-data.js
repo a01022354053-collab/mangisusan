@@ -1,7 +1,7 @@
 /* ==========================================================================
  * 만기수산셀프매장 홈페이지 콘텐츠 데이터
  * --------------------------------------------------------------------------
- * 자주 바뀌는 내용(임시휴무, 메뉴·가격, 이용 방법, 사진, 지도 위치, 리뷰·블로그)은
+ * 자주 바뀌는 내용(임시휴무, 메뉴·가격, 이벤트, 이용 방법, 사진, 지도 위치, 리뷰·블로그)은
  * 이 파일만 수정하면 화면에 반영됩니다.
  *
  * ▶ 작성 원칙
@@ -51,7 +51,7 @@ window.SITE_DATA = {
         strip: true, // 메뉴판 맨 위 대표 가격 아래 한 줄로 표시
         note: null,
         items: [
-          { name: '상차림비 (8세 이상)', priceType: 'fixed', options: [{ label: null, amount: 3000 }] }
+          { name: '상차림비 1인당 (8세 이상)', priceType: 'fixed', options: [{ label: null, amount: 3000 }] }
         ]
       },
       {
@@ -176,32 +176,31 @@ window.SITE_DATA = {
   greeting: null,
 
   /* ------------------------------------------------------------------------
-   * 2-3) 반찬 셀프바 — 셀프로 이용하는 것은 반찬입니다.
-   *    items: 셀프바에 있는 반찬 이름 (확인 후 입력), photo: { src, alt }
-   * ---------------------------------------------------------------------- */
-  selfbar: {
-    items: [],
-    photo: null
-  },
-
-  /* ------------------------------------------------------------------------
-   * 3) 처음 방문하는 손님을 위한 이용 방법
-   *    - published: false 인 동안에는 순서 번호 없이 '안내 예정 항목'으로만 보입니다.
-   *    - 실제 순서와 결제 시점을 매장에서 확인한 뒤 steps 순서·설명·사진을 채우고 true 로 바꾸세요.
-   *    - icon: door, fish, scale, flame, table, bowl, card 중 하나
-   *    - photo 예) { src: 'assets/img/guide/choose.webp', alt: '수조에서 장어를 고르는 모습' }
+   * 3) 처음 오신 손님을 위한 이용 방법 (메뉴판 바로 아래 '이용 방법' 섹션)
+   *    - steps: 순서대로 보입니다. icon: door, fish, scale, flame, table, bowl, card 중 하나
+   *    - photo: { src, alt } 가 있으면 사진, 없으면 아이콘으로 표시
+   *    - sides: 반찬 안내 (처음 상차림 / 이후 셀프바)
    * ---------------------------------------------------------------------- */
   guide: {
-    published: false,
     steps: [
-      { id: 'enter', icon: 'door', title: '매장 입장', description: null, photo: null },
-      { id: 'choose', icon: 'fish', title: '장어 선택', description: null, photo: null },
-      { id: 'weigh', icon: 'scale', title: '중량·가격 확인', description: null, photo: null },
-      { id: 'pre-grill', icon: 'flame', title: '초벌구이', description: null, photo: null },
-      { id: 'table', icon: 'table', title: '테이블 이용', description: null, photo: null },
-      { id: 'self-bar', icon: 'bowl', title: '반찬 셀프바', description: null, photo: null },
-      { id: 'order-pay', icon: 'card', title: '추가 주문·결제', description: null, photo: null }
-    ]
+      { id: 'choose', icon: 'fish', title: '장어 고르기',
+        description: '매장에 들어오시면 진열대에서 장어를 눈으로 보고 고르세요. 장어는 미리 무게를 재서 포장해 두었습니다.',
+        photo: { src: 'assets/img/gallery/interior-04-sm.webp', large: 'assets/img/gallery/interior-04.webp', alt: '무게를 재서 포장해 둔 장어가 놓인 진열대' } },
+      { id: 'table', icon: 'table', title: '자리에 앉기',
+        description: '테이블에 앉으시면 처음 반찬은 상을 차려 드립니다.',
+        photo: { src: 'assets/img/gallery/interior-02-sm.webp', large: 'assets/img/gallery/interior-02.webp', alt: '석쇠가 놓인 테이블이 있는 매장 홀' } },
+      { id: 'pre-grill', icon: 'flame', title: '초벌 기다리기',
+        description: '고르신 장어는 초벌을 해 드립니다. 잠시만 기다려 주세요.',
+        photo: null },
+      { id: 'grill', icon: 'flame', title: '구워서 드시기',
+        description: '초벌한 장어를 테이블 숯불에서 구워 드시면 됩니다.',
+        photo: { src: 'assets/img/gallery/food-05-sm.webp', large: 'assets/img/gallery/food-05.webp', alt: '테이블 숯불 석쇠에서 장어를 굽는 모습' } }
+    ],
+    sides: {
+      title: '반찬은 이렇게',
+      text: '처음에는 상을 차려 드리고, 그다음부터 더 필요한 반찬은 셀프바에서 직접 가져다 드시면 됩니다.',
+      photo: { src: 'assets/img/gallery/interior-01-sm.webp', large: 'assets/img/gallery/interior-01.webp', alt: '반찬 셀프바' }
+    }
   },
 
   /* ------------------------------------------------------------------------
@@ -210,13 +209,14 @@ window.SITE_DATA = {
    *      src: 'assets/img/gallery/exterior-01.webp',
    *      thumb: 'assets/img/gallery/exterior-01-sm.webp', // 없으면 src 사용
    *      alt: '북삼로에서 본 매장 외관',
-   *      category: 'exterior',                         // 'exterior'(매장 외부) 또는 'food'(장어)
+   *      category: 'exterior',                         // 'exterior'(매장 외부) · 'interior'(매장 내부) · 'food'(장어)
    *      isSample: false                               // 실제 매장 사진이 아니면 반드시 true
    *    }
    * ---------------------------------------------------------------------- */
   gallery: {
     categories: [
       { id: 'exterior', label: '매장 외부' },
+      { id: 'interior', label: '매장 내부' },
       { id: 'food', label: '장어' }
     ],
     photos: [
@@ -229,7 +229,17 @@ window.SITE_DATA = {
       { src: 'assets/img/gallery/food-03.webp', thumb: 'assets/img/gallery/food-03-sm.webp', category: 'food',
         alt: '하얀 접시마다 돌돌 말아 올린 손질한 민물장어', isSample: false },
       { src: 'assets/img/gallery/food-04.webp', thumb: 'assets/img/gallery/food-04-sm.webp', category: 'food',
-        alt: '은박 용기에 담긴 노릇하게 구운 장어', isSample: false }
+        alt: '은박 용기에 담긴 노릇하게 구운 장어', isSample: false },
+      { src: 'assets/img/gallery/food-05.webp', thumb: 'assets/img/gallery/food-05-sm.webp', category: 'food',
+        alt: '테이블 숯불 석쇠에서 장어를 굽는 모습과 생강·마늘·소스 등 곁들임 반찬', isSample: false },
+      { src: 'assets/img/gallery/interior-01.webp', thumb: 'assets/img/gallery/interior-01-sm.webp', category: 'interior',
+        alt: '반찬 셀프바. 반찬통과 그릇이 놓인 스테인리스 선반 위에 셀프바 안내판', isSample: false },
+      { src: 'assets/img/gallery/interior-02.webp', thumb: 'assets/img/gallery/interior-02-sm.webp', category: 'interior',
+        alt: '석쇠가 놓인 테이블과 연기 배출 덕트가 있는 매장 홀', isSample: false },
+      { src: 'assets/img/gallery/interior-03.webp', thumb: 'assets/img/gallery/interior-03-sm.webp', category: 'interior',
+        alt: '기둥에 걸린 메뉴판과 셀프바, 안쪽 만기수산 셀프매장 간판이 보이는 매장 안', isSample: false },
+      { src: 'assets/img/gallery/interior-04.webp', thumb: 'assets/img/gallery/interior-04-sm.webp', category: 'interior',
+        alt: '무게를 재서 포장해 둔 장어가 놓인 진열대', isSample: false }
     ]
   },
 

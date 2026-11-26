@@ -217,6 +217,7 @@
     </a>
     <ul class="site-nav__list" data-nav-list>
       <li><a href="#menu">메뉴판</a></li>
+      <li><a href="#guide">이용 방법</a></li>
       <li><a href="#info">매장정보</a></li>
       <li><a href="#gallery">사진</a></li>
       <li><a href="#reviews">리뷰</a></li>
@@ -259,13 +260,26 @@
   </section>
 
   <!-- ===================================================================
-       ④ 매장 안내 (PC: 왼쪽 매장 정보 + 오른쪽 매장 사진 / 아래 결제수단·이용 방법·반찬 셀프바)
+       ④ 이용 방법 — site-data.js 의 guide (장어 고르기 → 자리 → 초벌 → 구워 드시기, 반찬 안내)
+       =================================================================== -->
+  <section class="section section--guide" id="guide" aria-labelledby="guide-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title" id="guide-title">이용 방법</h2>
+        <p class="section__desc">처음 오셔도 어렵지 않아요. 이렇게 이용하시면 됩니다.</p>
+      </div>
+      <div data-guide-root></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       ⑤ 매장 안내 (PC: 왼쪽 매장 정보 + 오른쪽 매장 사진)
        =================================================================== -->
   <section class="section section--info" id="info" aria-labelledby="info-title">
     <div class="container">
       <div class="section__head">
         <h2 class="section__title" id="info-title">매장 안내</h2>
-        <p class="section__desc">영업시간·주차·편의시설과 매장 모습을 함께 확인해 주세요.</p>
+        <p class="section__desc">영업시간·주차·편의시설과 매장 모습을 확인해 주세요.</p>
       </div>
 
       <div class="info-grid">
@@ -484,33 +498,12 @@
           </ul>
         </article>
 
-        <!-- 이용 방법 — site-data.js 의 guide -->
-        <article class="card card--guide" id="guide" aria-labelledby="guide-title">
-          <div class="card__head">
-            <span class="card__icon" aria-hidden="true"><svg class="icon"><use href="#i-info"/></svg></span>
-            <h3 class="card__title" id="guide-title">처음 오셨나요? 이용 방법</h3>
-          </div>
-          <p class="card__lead card__lead--accent">셀프로 이용하시는 것은 <strong>반찬</strong>입니다. 반찬은 셀프바에서 직접 가져다 드시면 됩니다.</p>
-          <div data-guide-root></div>
-        </article>
-
-        <!-- 반찬 셀프바 — site-data.js 의 selfbar -->
-        <article class="card card--selfbar" id="selfbar" aria-labelledby="selfbar-title">
-          <div class="card__head">
-            <span class="card__icon" aria-hidden="true"><svg class="icon"><use href="#i-bowl"/></svg></span>
-            <h3 class="card__title" id="selfbar-title">반찬 셀프바</h3>
-          </div>
-          <div class="selfbar" data-selfbar-root>
-            <div class="selfbar__photo selfbar__photo--empty" aria-hidden="true"><svg class="icon"><use href="#i-camera"/></svg>사진 준비 중</div>
-            <p class="selfbar__text">반찬은 셀프바에서 직접 가져다 드세요.</p>
-          </div>
-        </article>
       </div>
     </div>
   </section>
 
   <!-- ===================================================================
-       ⑤ 방문 후기 — site-data.js 의 reviews, 블로그 글은 /api/blog
+       ⑥ 방문 후기 — site-data.js 의 reviews, 블로그 글은 /api/blog
        =================================================================== -->
   <section class="section section--reviews" id="reviews" aria-labelledby="reviews-title">
     <div class="container">
@@ -544,7 +537,7 @@
   </section>
 
   <!-- ===================================================================
-       ⑥ 오시는 길 (네이버 지도) — 위치 정보는 site-data.js 의 map
+       ⑦ 오시는 길 (네이버 지도) — 위치 정보는 site-data.js 의 map
        =================================================================== -->
   <section class="section section--location" id="location" aria-labelledby="location-title">
     <div class="container">
@@ -620,6 +613,7 @@
 <nav class="tabbar" aria-label="하단 메뉴" data-tabbar>
   <ul class="tabbar__list" data-nav-list>
     <li><a class="tabbar__item" href="#menu"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg><span>메뉴판</span></a></li>
+    <li><a class="tabbar__item" href="#guide"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span>이용방법</span></a></li>
     <li><a class="tabbar__item" href="#info"><svg class="icon" aria-hidden="true"><use href="#i-store"/></svg><span>매장정보</span></a></li>
     <li><a class="tabbar__item" href="#reviews"><svg class="icon" aria-hidden="true"><use href="#i-message"/></svg><span>리뷰</span></a></li>
     <li><a class="tabbar__item" href="#location"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span>오시는 길</span></a></li>
