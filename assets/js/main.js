@@ -266,9 +266,7 @@
     var visible = {};
     var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) { visible[entry.target.id] = entry.isIntersecting; });
-      // 매장 안내 안의 '오시는 길' 칸이 보이면 그 칸을 우선 (사진 칸은 옆에 고정되어 늘 보이므로 제외)
-      var shown = sections.filter(function (s) { return visible[s.id]; });
-      var section = visible.location && document.getElementById('location') || shown[0];
+      var section = sections.filter(function (s) { return visible[s.id]; })[0];
       if (section) setActive(section.id);
       else {
         current = null;
