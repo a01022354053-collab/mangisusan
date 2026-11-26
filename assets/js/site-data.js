@@ -29,13 +29,18 @@ window.SITE_DATA = {
    *      options: [ { label: '1kg', amount: 50000 } ],   // amount: 숫자(원), 모르면 null
    *                     // 할인 중이면 { amount: 27000, originalAmount: 30000 } → 원래 가격에 줄
    *      highlight: true,  // 메뉴판 맨 위에 크게 보여 줄 대표 가격 (장어)
-   *      badge: '대표', // 이름 아래 작은 표시 (선택)
+   *      meta: '41%',   // 이름 옆 작은 글씨 (도수 등, 선택)
+   *      badge: '대표', // 이름 앞 작은 표시 (선택)
    *      soldOut: false
    *    }
    *    분류의 strip: true → 대표 가격 아래 한 줄로 (상차림비)
+   *    분류의 column: 'left' | 'right' → 메뉴판 왼쪽/오른쪽 칸 (매장 메뉴판처럼 식사류 왼쪽, 주류 오른쪽)
+   *    가격이 둘 이상이면 첫 줄 뒤에 '토닉세트'처럼 아래 줄로 (첫 가격의 label 이 null 이면 이름 옆에)
    * ---------------------------------------------------------------------- */
   menu: {
     lastUpdated: '2026-11-19', // 가격 기준일 (네이버 플레이스 메뉴 최근 업데이트 26.11.19)
+    // 메뉴판 맨 아래 원산지 표시 (매장 메뉴판 기준)
+    origin: ['원산지 : 민물장어 국내산(토종민물장어 자포니카)', '쌀/배추/고추가루/동치미/백김치 국내산, 콩(미국, 캐나다, 호주 등)'],
     categories: [
       {
         id: 'eel',
@@ -51,24 +56,26 @@ window.SITE_DATA = {
         strip: true, // 메뉴판 맨 위 대표 가격 아래 한 줄로 표시
         note: null,
         items: [
-          { name: '상차림비 1인당 (8세 이상)', priceType: 'fixed', options: [{ label: null, amount: 3000 }] }
+          { name: '상차림비 1인당', after: '(8세 이상)', priceType: 'fixed', options: [{ label: null, amount: 3000 }] }
         ]
       },
       {
         id: 'meal',
-        label: '식사',
+        label: '식사류',
+        column: 'left',
         note: null,
         items: [
-          { name: '장어탕 (밥 포함)', badge: '대표', priceType: 'fixed', options: [{ label: null, amount: 8000 }] },
-          { name: '장어탕 홀식사', priceType: 'fixed', options: [{ label: null, amount: 10000 }] },
-          { name: '된장찌개 (밥 포함)', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },
+          { name: '장어탕 후식(밥포함)', priceType: 'fixed', options: [{ label: null, amount: 8000 }] },
+          { name: '된장찌개(밥포함)', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },
           { name: '열무국수', priceType: 'fixed', options: [{ label: null, amount: 5000 }] },
-          { name: '공기밥', priceType: 'fixed', options: [{ label: null, amount: 1000 }] }
+          { name: '공기밥 추가', priceType: 'fixed', options: [{ label: null, amount: 1000 }] },
+          { name: '장어탕 홀식사', priceType: 'fixed', options: [{ label: null, amount: 10000 }] }
         ]
       },
       {
         id: 'takeout',
         label: '포장',
+        column: 'left',
         note: null,
         items: [
           { name: '장어탕 포장', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
@@ -78,40 +85,22 @@ window.SITE_DATA = {
       {
         id: 'liquor',
         label: '주류',
+        column: 'right',
         note: null,
         items: [
-          { name: '소주', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },
-          { name: '맥주', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },
+          { name: '일품진로 오크', meta: '41%', priceType: 'fixed', options: [{ label: null, amount: 50000 }, { label: '토닉세트', amount: 52000 }] },
+          { name: '일품진로', meta: '25%', priceType: 'fixed', options: [{ label: null, amount: 25000 }, { label: '토닉세트', amount: 27000 }] },
+          { name: '화요', meta: '25%', priceType: 'fixed', options: [{ label: null, amount: 24000 }, { label: '토닉세트', amount: 26000 }] },
+          { name: '연태고량주', priceType: 'fixed', options: [{ label: '중', amount: 20000 }, { label: '대', amount: 35000 }] },
+          { name: '복분자', priceType: 'fixed', options: [{ label: null, amount: 15000 }, { label: '토닉세트', amount: 17000 }] },
           { name: '청하', priceType: 'fixed', options: [{ label: null, amount: 5000 }] },
           { name: '별빛청하', priceType: 'fixed', options: [{ label: null, amount: 6000 }] },
-          { name: '호랑이 막걸리', priceType: 'fixed', options: [{ label: null, amount: 5000 }] },
-          { name: '벌떡주', description: '15가지 한약재를 달여 만든 술 · 375ml · 13%', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
-          { name: '복분자', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
-          { name: '복분자 세트', description: '토닉워터 2병 + 레몬', priceType: 'fixed', options: [{ label: null, amount: 17000 }] }
-        ]
-      },
-      {
-        id: 'spirits',
-        label: '화요 · 일품진로 · 고량주',
-        note: null,
-        items: [
-          { name: '화요 25도', priceType: 'fixed', options: [{ label: null, amount: 24000 }] },
-          { name: '화요 세트', description: '토닉워터 2병 + 레몬', priceType: 'fixed', options: [{ label: null, amount: 26000 }] },
-          { name: '일품진로 25도', priceType: 'fixed', options: [{ label: null, amount: 25000 }] },
-          { name: '일품진로 세트', description: '토닉워터 2병 + 레몬', priceType: 'fixed', options: [{ label: null, amount: 27000 }] },
-          { name: '일품진로 오크 41도', priceType: 'fixed', options: [{ label: null, amount: 50000 }] },
-          { name: '일품진로 오크 세트', priceType: 'fixed', options: [{ label: null, amount: 52000 }] },
-          { name: '연태고량주 (중)', priceType: 'fixed', options: [{ label: null, amount: 20000 }] },
-          { name: '연태고량주 (대)', priceType: 'fixed', options: [{ label: null, amount: 35000 }] }
-        ]
-      },
-      {
-        id: 'beverage',
-        label: '음료',
-        note: null,
-        items: [
-          { name: '음료수', priceType: 'fixed', options: [{ label: null, amount: 2000 }] },
-          { name: '제로맥주', priceType: 'fixed', options: [{ label: null, amount: 4000 }] }
+          { name: '소주', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },
+          { name: '맥주', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },
+          { name: '제로맥주', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },
+          { name: '막걸리', priceType: 'fixed', options: [{ label: null, amount: 5000 }] },
+          { name: '벌떡주', description: '15가지 한약재 · 375ml · 13%', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
+          { name: '음료수', priceType: 'fixed', options: [{ label: null, amount: 2000 }] }
         ]
       }
     ]

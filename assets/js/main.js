@@ -449,44 +449,28 @@
   /* ======================================================================
    * 메뉴판 — 대표 가격(장어 100g당)을 맨 위에 크게
    * ==================================================================== */
-  function defaultOptionLabel(item) {
-    if (item.priceType === 'weight') return '중량별';
-    if (item.priceType === 'per-person') return '1인';
-    return null;
-  }
-
+  /** 매장 메뉴판처럼: 이름(도수) ─ 가격 / 아래 줄에 '토닉세트 52,000원' 같은 추가 가격 */
   function renderMenuItem(item) {
     var options = Array.isArray(item.options) && item.options.length ? item.options : [{ label: null, amount: null }];
-    var nameEl = h('span', { className: 'menu-row__name' }, [
-      item.badge ? h('span', { className: 'menu-row__tag', text: item.badge }) : null,
-      item.name,
-      item.soldOut ? h('span', { className: 'menu-row__badge', text: '품절' }) : null
-    ]);
-    var desc = item.description ? h('p', { className: 'menu-row__desc', text: item.description }) : null;
-
-    // 가격이 하나면 이름 옆에 바로, 여러 개(현금가·카드가 등)면 아래에 줄마다 표시
-    if (options.length === 1) {
-      var label = options[0].label || defaultOptionLabel(item);
-      return h('li', { className: 'menu-row' }, [
-        h('div', { className: 'menu-row__line' }, [
-          nameEl,
-          label ? h('span', { className: 'menu-row__label', text: '(' + label + ')' }) : null,
-          h('span', { className: 'menu-row__dots', 'aria-hidden': 'true' }),
-          priceSpan(options[0])
-        ]),
-        desc
-      ]);
-    }
+    var main = options[0].label ? null : options[0];
+    var subs = main ? options.slice(1) : options;
     return h('li', { className: 'menu-row' }, [
-      h('div', { className: 'menu-row__line' }, nameEl),
-      desc,
-      h('ul', { className: 'menu-options' }, options.map(function (option) {
-        return h('li', { className: 'menu-row__line' }, [
+      h('div', { className: 'menu-row__line' }, [
+        h('span', { className: 'menu-row__name' }, [
+          item.badge ? h('span', { className: 'menu-row__tag', text: item.badge }) : null,
+          item.name,
+          item.meta ? h('span', { className: 'menu-row__meta', text: item.meta }) : null,
+          item.soldOut ? h('span', { className: 'menu-row__badge', text: '품절' }) : null
+        ]),
+        main ? priceSpan(main) : null
+      ]),
+      item.description ? h('p', { className: 'menu-row__desc', text: item.description }) : null,
+      subs.length ? h('ul', { className: 'menu-options' }, subs.map(function (option) {
+        return h('li', { className: 'menu-row__line menu-row__line--sub' }, [
           h('span', { className: 'menu-row__label', text: option.label || '' }),
-          h('span', { className: 'menu-row__dots', 'aria-hidden': 'true' }),
           priceSpan(option)
         ]);
-      }))
+      })) : null
     ]);
   }
 
@@ -520,7 +504,8 @@
       var option = (item.options || [])[0] || {};
       return h('li', { className: 'menu-strip__item' }, [
         h('span', { className: 'menu-strip__name', text: item.name }),
-        priceSpan(option)
+        priceSpan(option),
+        item.after ? h('span', { className: 'menu-strip__after', text: item.after }) : null
       ]);
     }));
   }
@@ -550,7 +535,7 @@
         return true;
       });
       if (category.strip && items.length) { strips.push({ label: category.label, items: items }); return; }
-      categories.push({ id: category.id, label: category.label, note: category.note, items: items, hadHighlight: items.length !== (category.items || []).length });
+      categories.push({ id: category.id, label: category.label, column: category.column, note: category.note, items: items, hadHighlight: items.length !== (category.items || []).length });
     });
 
     var filled = categories.filter(function (c) { return c.items.length; });
@@ -571,13 +556,26 @@
         h('p', { className: 'menu-cat__note', text: '확인되는 대로 올려 드릴게요. 궁금하시면 전화로 문의해 주세요.' })
       ]));
     }
-    var cats = h('div', { className: 'menu-cats' }, blocks);
+    // 왼쪽 칸(식사류·포장) / 오른쪽 칸(주류) — 매장 메뉴판과 같은 배치
+    var left = [];
+    var right = [];
+    blocks.forEach(function (block, i) {
+      var category = filled[i];
+      (category && category.column === 'right' ? right : left).push(block);
+    });
+    var cats = h('div', { className: 'menu-cats menu-cats--board' }, [
+      h('div', { className: 'menu-col' }, left),
+      right.length ? h('div', { className: 'menu-col' }, right) : null
+    ]);
+    var origin = Array.isArray(menu.origin) && menu.origin.length
+      ? h('div', { className: 'menu-origin' }, menu.origin.map(function (line) { return h('p', { text: line }); }))
+      : null;
 
     var updated = menu.lastUpdated && BH
       ? h('p', { className: 'menu-updated', text: '가격 기준일: ' + menu.lastUpdated.slice(0, 4) + '년 ' + BH.formatDateKey(menu.lastUpdated) })
       : null;
 
-    setContent(root, head, notice, highlights.map(renderMenuHighlight), strips.map(renderMenuStrip), cats, updated);
+    setContent(root, head, notice, highlights.map(renderMenuHighlight), strips.map(renderMenuStrip), cats, origin, updated);
   }
 
   /* ======================================================================

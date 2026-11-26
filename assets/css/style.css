@@ -2398,6 +2398,54 @@ button.photo-viewer__slide { cursor: zoom-in; }
   .menu-updated { margin-top: 8px; font-size: var(--fs-xs); }
 }
 
+/* ==========================================================================
+   메뉴판 — 매장 메뉴판과 같은 배치: 왼쪽 식사류·포장 / 오른쪽 주류
+   이름은 왼쪽, 가격은 오른쪽 끝 정렬, 세트 가격은 바로 아래 줄 오른쪽
+   ========================================================================== */
+.menu-cats.menu-cats--board { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 18px; row-gap: 0; columns: auto; align-items: start; }
+.menu-col { display: grid; gap: 18px; align-content: start; min-width: 0; }
+.menu-cats--board .menu-cat { margin: 0; break-inside: auto; }
+.menu-cats--board .menu-list { display: block; }
+.menu-cats--board .menu-row { padding-block: 5px; border-bottom: 0; }
+.menu-cats--board .menu-row__line { display: flex; flex-wrap: nowrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.menu-cats--board .menu-row__name { flex: 1 1 auto; min-width: 0; font-size: var(--fs-base); line-height: 1.35; word-break: keep-all; }
+.menu-cats--board .menu-row__meta { margin-left: 6px; color: var(--c-ink-3); font-size: .85em; font-weight: 700; white-space: nowrap; }
+.menu-cats--board .menu-row__price { flex: none; font-size: var(--fs-base); text-align: right; }
+.menu-cats--board .menu-row__dots { display: none; }
+.menu-cats--board .menu-row__desc { margin-top: 0; font-size: var(--fs-xs); }
+.menu-cats--board .menu-options { display: grid; gap: 0; margin: 0; padding: 0; }
+.menu-cats--board .menu-row__line--sub { justify-content: flex-end; gap: 12px; }
+.menu-cats--board .menu-row__line--sub .menu-row__label { color: var(--c-ink-2); font-size: var(--fs-md); font-weight: 700; }
+.menu-cats--board .menu-row__line--sub .menu-row__price { min-width: 5.2em; font-size: var(--fs-md); }
+.menu-cats--board .menu-cat--takeout { margin-top: 6px; }
+.menu-strip__after { color: var(--c-ink-2); font-weight: 700; }
+.menu-origin { margin-top: 22px; padding-top: 14px; border-top: 1.5px solid rgba(75, 48, 30, .3); color: var(--c-ink-2); font-size: var(--fs-sm); line-height: 1.6; text-align: center; word-break: keep-all; }
+@media (min-width: 1024px) {
+  .menu-cats.menu-cats--board { column-gap: 72px; max-width: 920px; margin-inline: auto; }
+  .menu-col { gap: 26px; }
+  .menu-cats--board .menu-row { padding-block: 7px; }
+  .menu-cats--board .menu-row__name, .menu-cats--board .menu-row__price { font-size: var(--fs-lg); }
+  .menu-cats--board .menu-row__line--sub .menu-row__price { font-size: var(--fs-lg); }
+  .menu-cats--board .menu-row__line--sub .menu-row__label { font-size: var(--fs-base); }
+  .menu-origin { max-width: 920px; margin-inline: auto; font-size: var(--fs-md); }
+}
+/* 휴대폰: 두 칸을 유지하되 글자를 작게 */
+@media (max-width: 759px) {
+  .menu-cats.menu-cats--board { column-gap: 12px; }
+  .menu-col { gap: 12px; }
+  .menu-cats--board .menu-row { padding-block: 3px; }
+  .menu-cats--board .menu-row__line { flex-wrap: nowrap; gap: 4px; }
+  .menu-cats--board .menu-row__name { flex-basis: auto; font-size: .8125rem; letter-spacing: -0.02em; }
+  .menu-cats--board .menu-row__meta { display: block; margin-left: 0; font-size: .6875rem; }
+  .menu-cats--board .menu-row__price { font-size: .8125rem; letter-spacing: -0.02em; }
+  .menu-cats--board .menu-row__line--sub { gap: 6px; }
+  .menu-cats--board .menu-row__line--sub .menu-row__label { font-size: .75rem; }
+  .menu-cats--board .menu-row__line--sub .menu-row__price { min-width: 0; font-size: .8125rem; }
+  .menu-cats--board .menu-row__desc { font-size: .6875rem; line-height: 1.3; }
+  .menu-cats--board .menu-cat__title { font-size: 1.35rem; }
+  .menu-origin { margin-top: 14px; padding-top: 10px; font-size: .6875rem; }
+}
+
 /* ---------- 동작 줄이기 설정 존중 ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
