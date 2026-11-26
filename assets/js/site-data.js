@@ -210,31 +210,26 @@ window.SITE_DATA = {
    *      src: 'assets/img/gallery/exterior-01.webp',
    *      thumb: 'assets/img/gallery/exterior-01-sm.webp', // 없으면 src 사용
    *      alt: '북삼로에서 본 매장 외관',
-   *      category: 'exterior',                         // 아래 categories 의 id
-   *      caption: '매장 외관',
+   *      category: 'exterior',                         // 'exterior'(매장 외부) 또는 'food'(장어)
    *      isSample: false                               // 실제 매장 사진이 아니면 반드시 true
    *    }
    * ---------------------------------------------------------------------- */
   gallery: {
     categories: [
-      { id: 'exterior', label: '외관·입구' },
-      { id: 'interior', label: '매장 내부' },
-      { id: 'seats', label: '좌석·단체석' },
-      { id: 'food', label: '장어구이' },
-      { id: 'selfbar', label: '반찬 셀프바' },
-      { id: 'parking', label: '주차장' }
+      { id: 'exterior', label: '매장 외부' },
+      { id: 'food', label: '장어' }
     ],
     photos: [
       { src: 'assets/img/gallery/exterior-01.webp', thumb: 'assets/img/gallery/exterior-01-sm.webp', category: 'exterior',
-        caption: '외관 · 입구 · 가게 앞 주차장', alt: '만기수산 매장 외관. 흰 간판에 만기수산 민물장어 로고, 빨간 차양 아래 입구와 가게 앞 넓은 주차 공간', isSample: false },
+        alt: '만기수산 매장 외관. 흰 간판에 만기수산 민물장어 로고, 빨간 차양 아래 입구와 가게 앞 넓은 주차 공간', isSample: false },
       { src: 'assets/img/gallery/food-01.webp', thumb: 'assets/img/gallery/food-01-sm.webp', category: 'food',
-        caption: '숯불 석쇠 위 장어구이', alt: '숯불 위 석쇠에서 먹기 좋게 잘라 굽고 있는 민물장어', isSample: false },
+        alt: '숯불 위 석쇠에서 먹기 좋게 잘라 굽고 있는 민물장어', isSample: false },
       { src: 'assets/img/gallery/food-02.webp', thumb: 'assets/img/gallery/food-02-sm.webp', category: 'food',
-        caption: '숯불에 굽는 장어', alt: '빨갛게 달아오른 숯불 위 석쇠에서 익어 가는 장어 토막', isSample: false },
+        alt: '빨갛게 달아오른 숯불 위 석쇠에서 익어 가는 장어 토막', isSample: false },
       { src: 'assets/img/gallery/food-03.webp', thumb: 'assets/img/gallery/food-03-sm.webp', category: 'food',
-        caption: '손질한 민물장어', alt: '하얀 접시마다 돌돌 말아 올린 손질한 민물장어', isSample: false },
+        alt: '하얀 접시마다 돌돌 말아 올린 손질한 민물장어', isSample: false },
       { src: 'assets/img/gallery/food-04.webp', thumb: 'assets/img/gallery/food-04-sm.webp', category: 'food',
-        caption: '노릇하게 구운 장어', alt: '은박 용기에 담긴 노릇하게 구운 장어', isSample: false }
+        alt: '은박 용기에 담긴 노릇하게 구운 장어', isSample: false }
     ]
   },
 

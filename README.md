@@ -95,8 +95,7 @@ specialDays: [
 
 ### 사진 — `assets/img/gallery/` + `site-data.js` 의 `gallery.photos`
 - 긴 변 1600px 이하 WebP/JPG 권장. 사진은 매장 안내의 '매장 사진' 카드(PC 는 오른쪽에 고정)에서 한 장씩 넘겨 보며, 누르면 크게 보입니다.
-- 분류 순서(외관 → 내부 → 좌석 …)대로 보입니다. 사진이 없으면 분류별 '사진 준비 중' 자리가 나옵니다.
-- `category` 는 `food`(장어구이) `exterior`(외관·입구) `interior`(매장 내부) `seats`(좌석·단체석) `selfbar`(반찬 셀프바) `parking`(주차장) 중 하나입니다.
+- `category` 는 `exterior`(매장 외부) 또는 `food`(장어). 사진은 '매장 외부 / 장어' 칸으로 나뉘어 보이고, 사진이 있는 칸만 나타납니다.
 - 실제 매장 사진이 아니면 `isSample: true` → '예시 이미지' 표시.
 - 같은 이름으로 교체하면 최대 7일간 이전 사진이 보일 수 있으니 새 파일 이름을 쓰세요.
 

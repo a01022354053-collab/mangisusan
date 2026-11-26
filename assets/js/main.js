@@ -919,69 +919,83 @@
     var gallery = DATA.gallery;
     if (!root || !gallery || !Array.isArray(gallery.categories)) return;
 
-    var categoryLabel = {};
-    gallery.categories.forEach(function (c) { categoryLabel[c.id] = c.label; });
     var photos = (gallery.photos || []).filter(function (photo) { return photo && isSafeUrl(photo.src); });
-    // 분류 순서대로 정렬 (외관 → 내부 → 좌석 …)
-    var order = gallery.categories.map(function (c) { return c.id; });
-    photos.sort(function (a, b) { return order.indexOf(a.category) - order.indexOf(b.category); });
 
-    var items = photos.length
-      ? photos.map(function (photo) {
-          return { photo: photo, label: photo.caption || categoryLabel[photo.category] || '' };
-        })
-      : gallery.categories.map(function (c) { return { photo: null, label: c.label }; });
-    var total = items.length;
-    var current = 0;
-
-    var lightboxItems = photos.map(function (photo) {
-      return { src: photo.src, alt: photo.alt, caption: photo.caption || categoryLabel[photo.category] || '', isSample: photo.isSample };
+    // 분류 칸: 사진이 있는 분류만 (사진이 하나도 없으면 분류 이름으로 '사진 준비 중' 자리)
+    var groups = gallery.categories.map(function (c) {
+      return { id: c.id, label: c.label, photos: photos.filter(function (p) { return p.category === c.id; }) };
     });
+    var hasPhotos = photos.length > 0;
+    if (hasPhotos) groups = groups.filter(function (g) { return g.photos.length; });
+    if (!groups.length) return;
 
-    var slides = items.map(function (item, i) {
-      if (!item.photo) {
-        return h('div', { className: 'photo-viewer__slide photo-viewer__slide--empty', 'aria-hidden': 'true' }, [
-          icon('camera'),
-          h('span', { className: 'photo-viewer__empty-label', text: item.label }),
-          h('span', { className: 'photo-viewer__empty-desc', text: '사진 준비 중' })
-        ]);
-      }
-      var photo = item.photo;
+    var group = groups[0];
+    var current = 0;
+    var stage = h('div', { className: 'photo-viewer__stage' });
+    var caption = h('p', { className: 'photo-viewer__caption', 'aria-live': 'polite' });
+    var thumbs = h('ul', { className: 'photo-viewer__thumbs', 'aria-label': '사진 목록' });
+    var slides = [];
+    var prevBtn = h('button', { type: 'button', className: 'photo-viewer__nav photo-viewer__nav--prev', 'aria-label': '이전 사진', onclick: function () { show(current - 1); } }, icon('chevron-left'));
+    var nextBtn = h('button', { type: 'button', className: 'photo-viewer__nav photo-viewer__nav--next', 'aria-label': '다음 사진', onclick: function () { show(current + 1); } }, icon('chevron-right'));
+
+    var tabs = h('div', { className: 'photo-viewer__tabs', role: 'group', 'aria-label': '사진 분류' }, groups.map(function (g) {
       return h('button', {
         type: 'button',
-        className: 'photo-viewer__slide',
-        'aria-label': (photo.alt || item.label) + (photo.isSample ? ' (예시 이미지)' : '') + ' — 크게 보기',
-        onclick: function () { openLightbox(lightboxItems, i); }
-      }, [
-        h('img', { src: photo.src, alt: '', loading: 'lazy', decoding: 'async' }),
-        photo.isSample ? h('span', { className: 'sample-badge', 'aria-hidden': 'true', text: '예시 이미지' }) : null
-      ]);
-    });
+        className: 'photo-viewer__tab',
+        'aria-pressed': g === group ? 'true' : 'false',
+        onclick: function (event) {
+          Array.prototype.forEach.call(tabs.children, function (tab) { tab.setAttribute('aria-pressed', 'false'); });
+          event.currentTarget.setAttribute('aria-pressed', 'true');
+          selectGroup(g);
+        }
+      }, [g.label, hasPhotos ? h('span', { className: 'photo-viewer__tab-count', text: String(g.photos.length) }) : null]);
+    }));
 
-    var caption = h('p', { className: 'photo-viewer__caption', 'aria-live': 'polite' });
-    var stage = h('div', { className: 'photo-viewer__stage' }, slides.concat([
-      total > 1 ? h('button', { type: 'button', className: 'photo-viewer__nav photo-viewer__nav--prev', 'aria-label': '이전 사진', onclick: function () { show(current - 1); } }, icon('chevron-left')) : null,
-      total > 1 ? h('button', { type: 'button', className: 'photo-viewer__nav photo-viewer__nav--next', 'aria-label': '다음 사진', onclick: function () { show(current + 1); } }, icon('chevron-right')) : null,
-      caption
-    ]).filter(Boolean));
+    function lightboxItems() {
+      return group.photos.map(function (photo) {
+        return { src: photo.src, alt: photo.alt, caption: group.label, isSample: photo.isSample };
+      });
+    }
 
-    var thumbs = h('ul', { className: 'photo-viewer__thumbs' + (photos.length ? '' : ' photo-viewer__thumbs--labels'), 'aria-label': photos.length ? '사진 목록' : '준비 중인 사진 분류' },
-      items.map(function (item, i) {
+    function selectGroup(g) {
+      group = g;
+      current = 0;
+      if (!g.photos.length) {
+        slides = [h('div', { className: 'photo-viewer__slide photo-viewer__slide--empty is-current', 'aria-hidden': 'true' }, [
+          icon('camera'),
+          h('span', { className: 'photo-viewer__empty-label', text: g.label }),
+          h('span', { className: 'photo-viewer__empty-desc', text: '사진 준비 중' })
+        ])];
+      } else {
+        slides = g.photos.map(function (photo, i) {
+          return h('button', {
+            type: 'button',
+            className: 'photo-viewer__slide',
+            'aria-label': (photo.alt || g.label) + (photo.isSample ? ' (예시 이미지)' : '') + ' — 크게 보기',
+            onclick: function () { openLightbox(lightboxItems(), i); }
+          }, [
+            h('img', { src: photo.src, alt: '', loading: 'lazy', decoding: 'async' }),
+            photo.isSample ? h('span', { className: 'sample-badge', 'aria-hidden': 'true', text: '예시 이미지' }) : null
+          ]);
+        });
+      }
+      var many = g.photos.length > 1;
+      setContent(stage, slides, many ? prevBtn : null, many ? nextBtn : null, caption);
+      setContent(thumbs, many ? g.photos.map(function (photo, i) {
         return h('li', null, h('button', {
           type: 'button',
           className: 'photo-viewer__thumb',
-          'aria-label': item.label + (item.photo ? '' : ' 사진 (준비 중)'),
+          'aria-label': g.label + ' ' + (i + 1) + '번째 사진',
           onclick: function () { show(i); }
-        }, item.photo
-          ? h('img', { src: item.photo.thumb && isSafeUrl(item.photo.thumb) ? item.photo.thumb : item.photo.src, alt: '', loading: 'lazy', decoding: 'async' })
-          : h('span', { text: item.label })));
-      }));
+        }, h('img', { src: photo.thumb && isSafeUrl(photo.thumb) ? photo.thumb : photo.src, alt: '', loading: 'lazy', decoding: 'async' })));
+      }) : null);
+      thumbs.hidden = !many;
+      show(0);
+    }
 
     function show(index) {
-      var next = (index + total) % total;
-      var dir = index > current || (current === total - 1 && next === 0) ? 1 : -1;
-      stage.style.setProperty('--dir', String(dir));
-      current = next;
+      var total = Math.max(1, group.photos.length);
+      current = (index + total) % total;
       slides.forEach(function (slide, i) {
         slide.classList.toggle('is-current', i === current);
         if (slide.tagName === 'BUTTON') slide.tabIndex = i === current ? 0 : -1;
@@ -989,10 +1003,10 @@
       Array.prototype.forEach.call(thumbs.querySelectorAll('.photo-viewer__thumb'), function (thumb, i) {
         if (i === current) thumb.setAttribute('aria-current', 'true'); else thumb.removeAttribute('aria-current');
       });
-      caption.textContent = items[current].label + (items[current].photo ? '' : ' · 사진 준비 중') + '  ' + (current + 1) + ' / ' + total;
+      caption.textContent = !group.photos.length ? group.label + ' · 사진 준비 중' : total > 1 ? group.label + '  ' + (current + 1) + ' / ' + total : group.label;
     }
 
-    // 손가락으로 밀어서 넘기기
+    // 손가락으로 밀어서 넘기기 · 키보드 ← →
     var startX = null;
     var startY = null;
     stage.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, { passive: true });
@@ -1008,9 +1022,8 @@
       if (event.key === 'ArrowLeft') show(current - 1);
     });
 
-    show(0);
-    setContent(root, h('div', { className: 'photo-viewer' + (photos.length ? '' : ' photo-viewer--empty') }, [stage, thumbs]),
-      photos.length ? null : h('p', { className: 'photo-viewer__note', text: '외관·내부·좌석 등 실제 매장 사진을 준비하고 있습니다.' }));
+    selectGroup(group);
+    setContent(root, h('div', { className: 'photo-viewer' }, [groups.length > 1 ? tabs : null, stage, thumbs]));
   }
 
   /* ======================================================================

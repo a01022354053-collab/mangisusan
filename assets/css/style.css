@@ -2384,21 +2384,27 @@ button.photo-viewer__slide { cursor: zoom-in; }
 }
 .photo-viewer__thumb img { width: 100%; height: 100%; object-fit: cover; }
 .photo-viewer__thumb[aria-current="true"] { border-color: var(--c-red); }
-.photo-viewer__thumbs--labels .photo-viewer__thumb {
-  width: auto;
-  height: auto;
-  min-height: 36px;
-  padding: 6px 12px;
+.photo-viewer__thumbs[hidden] { display: none; }
+/* 분류 칸: 매장 외부 · 장어 */
+.photo-viewer__tabs { display: flex; gap: 6px; }
+.photo-viewer__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 6px 16px;
   border: 1px solid var(--c-line-strong);
   border-radius: 999px;
   background: var(--c-surface);
   color: var(--c-ink-2);
-  font-size: var(--fs-sm);
-  font-weight: 700;
-  white-space: nowrap;
+  font-size: var(--fs-md);
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .2s ease;
 }
-.photo-viewer__thumbs--labels .photo-viewer__thumb[aria-current="true"] { border-color: var(--c-ink); background: var(--c-ink); color: #fff; }
-.photo-viewer__note { margin-top: 10px; color: var(--c-ink-3); font-size: var(--fs-sm); }
+.photo-viewer__tab[aria-pressed="true"] { border-color: var(--c-ink); background: var(--c-ink); color: #fff; }
+.photo-viewer__tab-count { font-size: var(--fs-xs); font-weight: 700; opacity: .7; font-variant-numeric: tabular-nums; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) { .photo-viewer__tab:hover { transform: translateY(-2px); } }
 @media (min-width: 760px) and (max-width: 1023px) { .photo-viewer__stage { aspect-ratio: 2 / 1; } }
 @media (max-width: 759px) {
   .photo-viewer__stage { aspect-ratio: 16 / 11; }
