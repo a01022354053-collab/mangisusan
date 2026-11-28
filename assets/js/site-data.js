@@ -190,7 +190,7 @@ window.SITE_DATA = {
     sides: {
       title: '반찬은 이렇게',
       text: '처음에는 상을 차려 드리고, 그다음부터 더 필요한 반찬은 셀프바에서 직접 가져다 드시면 됩니다.',
-      photo: { src: 'assets/img/gallery/interior-01-sm.webp', large: 'assets/img/gallery/interior-01.webp', alt: '반찬 셀프바' }
+      photo: { src: 'assets/img/gallery/selfbar-01-sm.webp', large: 'assets/img/gallery/selfbar-01.webp', alt: '반찬 셀프바' }
     }
   },
 
@@ -227,7 +227,7 @@ window.SITE_DATA = {
         alt: '접시에 담아 낸 구운 장어와 소스·생강·와사비', isSample: false },
       { src: 'assets/img/gallery/food-07.webp', thumb: 'assets/img/gallery/food-07-sm.webp', category: 'food',
         alt: '접시에 수북이 담긴 구운 장어와 곁들임 반찬', isSample: false },
-      { src: 'assets/img/gallery/interior-01.webp', thumb: 'assets/img/gallery/interior-01-sm.webp', category: 'interior',
+      { src: 'assets/img/gallery/selfbar-01.webp', thumb: 'assets/img/gallery/selfbar-01-sm.webp', category: 'interior',
         alt: '반찬 셀프바. 반찬통과 그릇이 놓인 스테인리스 선반 위에 셀프바 안내판', isSample: false },
       { src: 'assets/img/gallery/interior-02.webp', thumb: 'assets/img/gallery/interior-02-sm.webp', category: 'interior',
         alt: '석쇠가 놓인 테이블과 연기 배출 덕트가 있는 매장 홀', isSample: false },
