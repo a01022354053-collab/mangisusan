@@ -89,10 +89,10 @@ window.SITE_DATA = {
         note: null,
         items: [
           { name: '일품진로 오크', meta: '41%', priceType: 'fixed', options: [{ label: null, amount: 50000 }, { label: '토닉세트', amount: 52000 }] },
-          { name: '일품진로', meta: '25%', priceType: 'fixed', options: [{ label: null, amount: 25000 }, { label: '토닉세트', amount: 27000 }] },
-          { name: '화요', meta: '25%', priceType: 'fixed', options: [{ label: null, amount: 24000 }, { label: '토닉세트', amount: 26000 }] },
+          { name: '일품진로', meta: '25%', priceType: 'fixed', options: [{ label: null, amount: 25000 }] },
+          { name: '화요', meta: '25%', priceType: 'fixed', options: [{ label: null, amount: 24000 }] },
           { name: '연태고량주', priceType: 'fixed', options: [{ label: '중', amount: 20000 }, { label: '대', amount: 35000 }] },
-          { name: '복분자', priceType: 'fixed', options: [{ label: null, amount: 15000 }, { label: '토닉세트', amount: 17000 }] },
+          { name: '복분자', priceType: 'fixed', options: [{ label: null, amount: 15000 }] },
           { name: '청하', priceType: 'fixed', options: [{ label: null, amount: 5000 }] },
           { name: '별빛청하', priceType: 'fixed', options: [{ label: null, amount: 6000 }] },
           { name: '소주', priceType: 'fixed', options: [{ label: null, amount: 4000 }] },
